@@ -5,6 +5,7 @@
 #define FSH	"mandelbrot.fsh"
 //#define FSH	"lines.fsh"
 //#define FSH	"light.fsh"
+//#define FSH	"alg.fsh"
 
 GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {

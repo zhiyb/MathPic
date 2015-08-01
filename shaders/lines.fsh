@@ -1,15 +1,15 @@
-varying vec2 position;
-
-float _sq(float x)
-{
-    return x * x;
-}
+#version 130
+#extension GL_ARB_gpu_shader_fp64 : enable
+in vec2 position;
+uniform float zoom;
+uniform vec2 move;
 
 void main(void)
 {
-    float DIM = 1024;
-    float i = (position.x + 1.) / 2. * DIM;
-    float j = (-position.y + 1.) / 2. * DIM;
+    vec2 pos = position / pow(1.1, zoom) + move / 1024.;
+    float DIM = 1024.;
+    float i = (pos.x + 1.) / 2. * DIM;
+    float j = (-pos.y + 1.) / 2. * DIM;
 
     int r = int((i+j)*2.);
     int g = int((i+j)*8.);
