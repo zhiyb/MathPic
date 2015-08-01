@@ -2,7 +2,8 @@
 #define GLWIDGET_H
 
 #include <QtWidgets>
-#include <QOpenGLFunctions_4_0_Core>
+#include <QOpenGLFramebufferObject>
+#include <QOpenGLFunctions>
 
 class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -16,20 +17,28 @@ protected:
 	void wheelEvent(QWheelEvent *e);
 	void mousePressEvent(QMouseEvent *e);
 	void mouseMoveEvent(QMouseEvent *e);
+	void keyPressEvent(QKeyEvent *e);
 
 private:
+	//void saveImage(void);
+	void render(void);
 	GLuint loadShader(GLenum type, const QByteArray& context);
 	GLuint loadShaderFile(GLenum type, const char *path);
 
 	struct data_t {
 		struct loc_t {
-			GLuint vertex, zoom, move;
+			GLuint vertex, projection;
+			GLuint zoom, move;
 		} loc;
 		GLuint program;
 		GLfloat zoom;
 		GLfloat moveX, moveY;
 		QPoint prevPos;
 		QVector<QVector2D> vertex;
+		QMatrix4x4 projection;
+		QOpenGLFramebufferObject *fbo;
+		QImage img;
+		bool saving;
 	} data;
 };
 

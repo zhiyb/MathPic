@@ -1,12 +1,12 @@
 #version 130
 in vec2 vertex;
-
+uniform mat4 projection;
 out vec2 position;
 
 void main(void)
 {
     position = vertex;
-    gl_Position.xy = vertex;
-    gl_Position.z = 0.;
-    gl_Position.w = 1.;
+    vec4 pos;
+    pos.xyzw = vec4(vertex, 1., 1.);
+    gl_Position = projection * pos;
 }

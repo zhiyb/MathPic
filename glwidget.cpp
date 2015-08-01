@@ -1,11 +1,14 @@
 #include "glwidget.h"
 #include <QDebug>
+#include <QOpenGLFramebufferObject>
 
 //#define FSH	"stackheap.fsh"
 #define FSH	"mandelbrot.fsh"
 //#define FSH	"lines.fsh"
 //#define FSH	"light.fsh"
 //#define FSH	"alg.fsh"
+
+#define SAVESZ	600
 
 GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
@@ -16,12 +19,16 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 	data.zoom = 0;
 	data.moveX = 0;
 	data.moveY = 0;
+	data.saving = false;
 
 	QSurfaceFormat fmt = format();
 	fmt.setSamples(0);
 	setFormat(fmt);
 	QSurfaceFormat::setDefaultFormat(fmt);
 	setFormat(fmt);
+
+	setFocusPolicy(Qt::StrongFocus);
+	setAutoFillBackground(false);
 }
 
 void GLWidget::initializeGL()
@@ -52,25 +59,53 @@ void GLWidget::initializeGL()
 	qWarning(log);
 
 	data.loc.vertex = glGetAttribLocation(data.program, "vertex");
+	data.loc.projection = glGetUniformLocation(data.program, "projection");
 	data.loc.zoom = glGetUniformLocation(data.program, "zoom");
 	data.loc.move = glGetUniformLocation(data.program, "move");
 	glEnableVertexAttribArray(data.loc.vertex);
+	glUseProgram(data.program);
+
+	data.fbo = new QOpenGLFramebufferObject(SAVESZ, SAVESZ);
 }
 
 void GLWidget::resizeGL(int w, int h)
 {
 	glViewport(0, 0, w, h);
+	float asp = (float)h / (float)w;
+	data.projection.setToIdentity();
+	data.projection.ortho(-1, 1, -asp, asp, -1, 1);
+}
+
+void GLWidget::render()
+{
+	glUniformMatrix4fv(data.loc.projection, 1, GL_FALSE, data.projection.constData());
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+	glFinish();
 }
 
 void GLWidget::paintGL()
 {
-	glUseProgram(data.program);
-	glClearColor(0.0, 0.0, 0.0, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT);
 	glUniform1f(data.loc.zoom, data.zoom);
 	glUniform2f(data.loc.move, data.moveX, data.moveY);
 	glVertexAttribPointer(data.loc.vertex, 2, GL_FLOAT, GL_FALSE, 0, data.vertex.constData());
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+
+	render();
+	if (!data.saving)
+		return;
+	data.saving = false;
+
+	data.fbo->bind();
+	resizeGL(SAVESZ, SAVESZ);
+	render();
+	data.fbo->release();
+	data.img = data.fbo->toImage();
+	resizeGL(width(), height());
+
+	QLabel *l = new QLabel;
+	l->setPixmap(QPixmap::fromImage(data.img));
+	l->show();
 }
 
 void GLWidget::mousePressEvent(QMouseEvent *e)
@@ -87,14 +122,25 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e)
 	update();
 }
 
+void GLWidget::keyPressEvent(QKeyEvent *e)
+{
+	switch (e->key()) {
+	case 's':
+	case 'S':
+		qDebug() << "Save...";
+		data.saving = true;
+		update();
+		e->accept();
+		break;
+	};
+}
+
 void GLWidget::wheelEvent(QWheelEvent *e)
 {
 	float zoom = (float)e->angleDelta().y() / 120.;
-	//if (data.zoom + zoom >= 0) {
-		data.zoom += zoom;
-		qDebug() << "Zooming level: " << pow(1.1, data.zoom);
-		update();
-	//}
+	data.zoom += zoom;
+	qDebug() << "Zooming level: " << pow(1.1, data.zoom);
+	update();
 }
 
 GLuint GLWidget::loadShader(GLenum type, const QByteArray& context)
