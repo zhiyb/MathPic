@@ -1,6 +1,9 @@
 <RCC>
-    <qresource prefix="/shaders">
-        <file>vertex.vsh</file>
-        <file>stackheap.fsh</file>
+    <qresource prefix="/data">
+        <file>shaders/light.fsh</file>
+        <file>shaders/mandelbrot.fsh</file>
+        <file>shaders/stackheap.fsh</file>
+        <file>shaders/vertex.vsh</file>
+        <file>shaders/lines.fsh</file>
     </qresource>
 </RCC>

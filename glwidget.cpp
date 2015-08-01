@@ -1,6 +1,11 @@
 #include "glwidget.h"
 #include <QDebug>
 
+//#define FSH	"stackheap.fsh"
+#define FSH	"mandelbrot.fsh"
+//#define FSH	"lines.fsh"
+//#define FSH	"light.fsh"
+
 GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
 	data.vertex.push_back(QVector2D(1.0, 1.0));
@@ -24,9 +29,9 @@ void GLWidget::initializeGL()
 	glEnable(GL_MULTISAMPLE);
 
 	qDebug("Loading vertex shader...");
-	GLuint vsh = loadShaderFile(GL_VERTEX_SHADER, ":/shaders/vertex.vsh");
-	qDebug("Loading fragment shader...");
-	GLuint fsh = loadShaderFile(GL_FRAGMENT_SHADER, ":/shaders/stackheap.fsh");
+	GLuint vsh = loadShaderFile(GL_VERTEX_SHADER, ":/data/shaders/vertex.vsh");
+	qDebug("Loading fragment shader: " FSH "...");
+	GLuint fsh = loadShaderFile(GL_FRAGMENT_SHADER, ":/data/shaders/" FSH);
 	if (vsh == 0 || fsh == 0)
 		return;
 	data.program = glCreateProgram();
@@ -63,7 +68,7 @@ void GLWidget::mousePressEvent(QMouseEvent *e)
 void GLWidget::mouseMoveEvent(QMouseEvent *e)
 {
 	QPoint p = e->pos() - data.prevPos;
-	data.move += QVector2D(-p.x(), p.y());
+	data.move += QVector2D(-p.x(), p.y()) / pow(1.1, data.zoom);
 	update();
 }
 
