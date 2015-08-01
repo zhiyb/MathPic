@@ -18,7 +18,7 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 	data.moveY = 0;
 
 	QSurfaceFormat fmt = format();
-	fmt.setSamples(4);
+	fmt.setSamples(0);
 	setFormat(fmt);
 	QSurfaceFormat::setDefaultFormat(fmt);
 	setFormat(fmt);
