@@ -26,7 +26,7 @@ void GLWidget::initializeGL()
 	initializeOpenGLFunctions();
 	qDebug() << format();
 
-	glEnable(GL_MULTISAMPLE);
+	//glEnable(GL_MULTISAMPLE);
 
 	qDebug("Loading vertex shader...");
 	GLuint vsh = loadShaderFile(GL_VERTEX_SHADER, ":/data/shaders/vertex.vsh");
@@ -69,6 +69,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e)
 {
 	QPoint p = e->pos() - data.prevPos;
 	data.move += QVector2D(-p.x(), p.y()) / pow(1.1, data.zoom);
+	data.prevPos = e->pos();
 	update();
 }
 
@@ -91,14 +92,14 @@ GLuint GLWidget::loadShader(GLenum type, const QByteArray& context)
 
 	int status;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-	if (status == GL_TRUE)
-		return shader;
 
 	int logLength;
 	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
 	char log[logLength];
 	glGetShaderInfoLog(shader, logLength, &logLength, log);
 	qWarning(log);
+	if (status == GL_TRUE)
+		return shader;
 	glDeleteShader(shader);
 	return 0;
 }

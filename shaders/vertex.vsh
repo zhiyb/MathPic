@@ -7,6 +7,6 @@ void main(void)
 {
     position = vertex / pow(1.1, zoom) + move / 1024.;
     gl_Position.xy = vertex;
-    gl_Position.z = 0;
-    gl_Position.w = 1;
+    gl_Position.z = 0.;
+    gl_Position.w = 1.;
 }
