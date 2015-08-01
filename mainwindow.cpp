@@ -7,6 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
 	GLWidget *w = new GLWidget(this);
 	setCentralWidget(w);
 	setAttribute(Qt::WA_QuitOnClose);
+	resize(640, 640);
 }
 
 void MainWindow::closeEvent(QCloseEvent *e)

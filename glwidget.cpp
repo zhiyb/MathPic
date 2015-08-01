@@ -9,6 +9,7 @@
 
 const char *GLWidget::fileList[] = {
 	RESPFX "mandelbrot.fsh",
+	RESPFX "mandelbrot2.fsh",
 	RESPFX "stackheap.fsh",
 	RESPFX "lines.fsh",
 	RESPFX "light.fsh",
@@ -162,6 +163,10 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e)
 void GLWidget::keyPressEvent(QKeyEvent *e)
 {
 	switch (e->key()) {
+	case 'q':
+	case 'Q':
+		qApp->quit();
+		break;
 	case 's':
 	case 'S':
 		e->accept();

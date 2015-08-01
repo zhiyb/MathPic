@@ -6,5 +6,6 @@
         <file>shaders/vertex.vsh</file>
         <file>shaders/lines.fsh</file>
         <file>shaders/alg.fsh</file>
+        <file>shaders/mandelbrot2.fsh</file>
     </qresource>
 </RCC>
