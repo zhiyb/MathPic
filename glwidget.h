@@ -2,7 +2,7 @@
 #define GLWIDGET_H
 
 #include <QtWidgets>
-#include <QOpenGLFunctions>
+#include <QOpenGLFunctions_4_0_Core>
 
 class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -27,7 +27,7 @@ private:
 		} loc;
 		GLuint program;
 		GLfloat zoom;
-		QVector2D move;
+		GLfloat moveX, moveY;
 		QPoint prevPos;
 		QVector<QVector2D> vertex;
 	} data;

@@ -13,6 +13,8 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 	data.vertex.push_back(QVector2D(-1.0, -1.0));
 	data.vertex.push_back(QVector2D(-1.0, 1.0));
 	data.zoom = 0;
+	data.moveX = 0;
+	data.moveY = 0;
 
 	QSurfaceFormat fmt = format();
 	fmt.setSamples(4);
@@ -37,8 +39,17 @@ void GLWidget::initializeGL()
 	data.program = glCreateProgram();
 	glAttachShader(data.program, vsh);
 	glAttachShader(data.program, fsh);
+	//glBindFragDataLocation(data.program, 0, "fragColor");
+
+	qDebug() << "Linking program...";
 	glLinkProgram(data.program);
-	glUseProgram(data.program);
+
+	int logLength;
+	glGetProgramiv(data.program, GL_INFO_LOG_LENGTH, &logLength);
+	char log[logLength];
+	glGetProgramInfoLog(data.program, logLength, &logLength, log);
+	qWarning(log);
+
 	data.loc.vertex = glGetAttribLocation(data.program, "vertex");
 	data.loc.zoom = glGetUniformLocation(data.program, "zoom");
 	data.loc.move = glGetUniformLocation(data.program, "move");
@@ -52,10 +63,11 @@ void GLWidget::resizeGL(int w, int h)
 
 void GLWidget::paintGL()
 {
+	glUseProgram(data.program);
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glUniform1f(data.loc.zoom, data.zoom);
-	glUniform2fv(data.loc.move, 1, (const GLfloat *)&data.move);
+	glUniform2f(data.loc.move, data.moveX, data.moveY);
 	glVertexAttribPointer(data.loc.vertex, 2, GL_FLOAT, GL_FALSE, 0, data.vertex.constData());
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
@@ -68,7 +80,8 @@ void GLWidget::mousePressEvent(QMouseEvent *e)
 void GLWidget::mouseMoveEvent(QMouseEvent *e)
 {
 	QPoint p = e->pos() - data.prevPos;
-	data.move += QVector2D(-p.x(), p.y()) / pow(1.1, data.zoom);
+	data.moveX += -p.x() / pow(1.1, data.zoom);
+	data.moveY += p.y() / pow(1.1, data.zoom);
 	data.prevPos = e->pos();
 	update();
 }
@@ -78,6 +91,7 @@ void GLWidget::wheelEvent(QWheelEvent *e)
 	float zoom = (float)e->angleDelta().y() / 120.;
 	//if (data.zoom + zoom >= 0) {
 		data.zoom += zoom;
+		qDebug() << "Zooming level: " << pow(1.1, data.zoom);
 		update();
 	//}
 }
