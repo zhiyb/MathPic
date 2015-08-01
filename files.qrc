@@ -7,5 +7,6 @@
         <file>shaders/lines.fsh</file>
         <file>shaders/alg.fsh</file>
         <file>shaders/mandelbrot2.fsh</file>
+        <file>shaders/julia.fsh</file>
     </qresource>
 </RCC>
