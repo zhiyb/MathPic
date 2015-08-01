@@ -9,7 +9,7 @@
 //#define FSH	"light.fsh"
 //#define FSH	"alg.fsh"
 
-#define SAVESZ	3200
+#define SAVESZ	2400
 
 GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
@@ -121,9 +121,9 @@ void GLWidget::mousePressEvent(QMouseEvent *e)
 
 void GLWidget::mouseMoveEvent(QMouseEvent *e)
 {
-	QPoint p = e->pos() - data.prevPos;
-	data.moveX += -p.x() / pow(1.1, data.zoom);
-	data.moveY += p.y() / pow(1.1, data.zoom);
+	QPointF p = e->pos() - data.prevPos;
+	data.moveX += 1024.f * -p.x() * 2.f / pow(1.1, data.zoom) / (float)width();
+	data.moveY += 1024.f * p.y() * 2.f / pow(1.1, data.zoom) / (float)width();
 	data.prevPos = e->pos();
 	update();
 }
