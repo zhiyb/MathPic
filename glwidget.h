@@ -22,15 +22,16 @@ protected:
 private:
 	//void saveImage(void);
 	void render(void);
+	void loadShaders(QString file);
 	GLuint loadShader(GLenum type, const QByteArray& context);
-	GLuint loadShaderFile(GLenum type, const char *path);
+	GLuint loadShaderFile(GLenum type, QString path);
 
 	struct data_t {
 		struct loc_t {
 			GLuint vertex, projection;
 			GLuint zoom, move;
 		} loc;
-		GLuint program;
+		GLuint program, fsh, vsh;
 		GLfloat zoom;
 		GLfloat moveX, moveY;
 		QPoint prevPos;
@@ -39,7 +40,10 @@ private:
 		QOpenGLFramebufferObject *fbo;
 		QImage img;
 		bool saving;
+		int currentFile, nextFile;
+		QString filePath;
 	} data;
+	static const char *fileList[];
 };
 
 #endif // GLWIDGET_H

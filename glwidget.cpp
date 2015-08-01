@@ -3,13 +3,18 @@
 #include <QOpenGLFramebufferObject>
 #include <QFileDialog>
 
-//#define FSH	"stackheap.fsh"
-#define FSH	"mandelbrot.fsh"
-//#define FSH	"lines.fsh"
-//#define FSH	"light.fsh"
-//#define FSH	"alg.fsh"
+#define RESPFX	":/data/shaders/"
 
 #define SAVESZ	2400
+
+const char *GLWidget::fileList[] = {
+	RESPFX "mandelbrot.fsh",
+	RESPFX "stackheap.fsh",
+	RESPFX "lines.fsh",
+	RESPFX "light.fsh",
+	RESPFX "alg.fsh",
+	0
+};
 
 GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
@@ -21,6 +26,11 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 	data.moveX = 0;
 	data.moveY = 0;
 	data.saving = false;
+	data.currentFile = 0;
+	data.nextFile = 0;
+	data.vsh = 0;
+	data.fsh = 0;
+	data.program = 0;
 
 	QSurfaceFormat fmt = format();
 	fmt.setSamples(0);
@@ -39,33 +49,8 @@ void GLWidget::initializeGL()
 
 	//glEnable(GL_MULTISAMPLE);
 
-	qDebug("Loading vertex shader...");
-	GLuint vsh = loadShaderFile(GL_VERTEX_SHADER, ":/data/shaders/vertex.vsh");
-	qDebug("Loading fragment shader: " FSH "...");
-	GLuint fsh = loadShaderFile(GL_FRAGMENT_SHADER, ":/data/shaders/" FSH);
-	if (vsh == 0 || fsh == 0)
-		return;
 	data.program = glCreateProgram();
-	glAttachShader(data.program, vsh);
-	glAttachShader(data.program, fsh);
-	//glBindFragDataLocation(data.program, 0, "fragColor");
-
-	qDebug() << "Linking program...";
-	glLinkProgram(data.program);
-
-	int logLength;
-	glGetProgramiv(data.program, GL_INFO_LOG_LENGTH, &logLength);
-	char log[logLength];
-	glGetProgramInfoLog(data.program, logLength, &logLength, log);
-	qWarning(log);
-
-	data.loc.vertex = glGetAttribLocation(data.program, "vertex");
-	data.loc.projection = glGetUniformLocation(data.program, "projection");
-	data.loc.zoom = glGetUniformLocation(data.program, "zoom");
-	data.loc.move = glGetUniformLocation(data.program, "move");
-	glEnableVertexAttribArray(data.loc.vertex);
-	glUseProgram(data.program);
-
+	loadShaders(fileList[data.currentFile]);
 	data.fbo = new QOpenGLFramebufferObject(SAVESZ, SAVESZ);
 }
 
@@ -86,8 +71,54 @@ void GLWidget::render()
 	glFinish();
 }
 
+void GLWidget::loadShaders(QString file)
+{
+	if (data.fsh) {
+		glDeleteShader(data.fsh);
+		glDetachShader(data.program, data.fsh);
+	}
+
+	if (!data.vsh) {
+		qDebug("Loading vertex shader...");
+		data.vsh = loadShaderFile(GL_VERTEX_SHADER, RESPFX "vertex.vsh");
+	}
+	qDebug(QString("Loading fragment shader: %1...").arg(file).toLocal8Bit());
+	data.fsh = loadShaderFile(GL_FRAGMENT_SHADER, file);
+	if (data.vsh == 0 || data.fsh == 0)
+		return;
+
+	glAttachShader(data.program, data.vsh);
+	glAttachShader(data.program, data.fsh);
+
+	qDebug() << "Linking program...";
+	glLinkProgram(data.program);
+
+	int logLength;
+	glGetProgramiv(data.program, GL_INFO_LOG_LENGTH, &logLength);
+	char log[logLength];
+	glGetProgramInfoLog(data.program, logLength, &logLength, log);
+	qWarning(log);
+
+	data.loc.vertex = glGetAttribLocation(data.program, "vertex");
+	data.loc.projection = glGetUniformLocation(data.program, "projection");
+	data.loc.zoom = glGetUniformLocation(data.program, "zoom");
+	data.loc.move = glGetUniformLocation(data.program, "move");
+	glEnableVertexAttribArray(data.loc.vertex);
+	glUseProgram(data.program);
+}
+
 void GLWidget::paintGL()
 {
+	if (data.currentFile != data.nextFile) {
+		if (data.nextFile == -1)
+			loadShaders(data.filePath);
+		else
+			loadShaders(fileList[data.nextFile]);
+		data.currentFile = data.nextFile;
+		data.zoom = 0;
+		data.moveX = 0;
+		data.moveY = 0;
+	}
 	glUniform1f(data.loc.zoom, data.zoom);
 	glUniform2f(data.loc.move, data.moveX, data.moveY);
 	glVertexAttribPointer(data.loc.vertex, 2, GL_FLOAT, GL_FALSE, 0, data.vertex.constData());
@@ -133,10 +164,37 @@ void GLWidget::keyPressEvent(QKeyEvent *e)
 	switch (e->key()) {
 	case 's':
 	case 'S':
+		e->accept();
 		qDebug() << "Save...";
 		data.saving = true;
 		update();
+		break;
+	case Qt::Key_Up:
+	case Qt::Key_Left:
 		e->accept();
+		qDebug() << "Previous...";
+		if (data.nextFile > 0) {
+			data.nextFile--;
+			update();
+		}
+		break;
+	case Qt::Key_Down:
+	case Qt::Key_Right:
+		e->accept();
+		qDebug() << "Next...";
+		if (fileList[data.nextFile + 1] != 0) {
+			data.nextFile++;
+			update();
+		}
+		break;
+	case 'o':
+	case 'O':
+		e->accept();
+		data.filePath = QFileDialog::getOpenFileName(this, "Open shader file...", QString(), "Fragment shader (*.fsh)");
+		if (data.filePath.isEmpty())
+			break;
+		data.nextFile = -1;
+		data.currentFile = 0;	// Set as different value for forced loading
 		break;
 	};
 }
@@ -171,7 +229,7 @@ GLuint GLWidget::loadShader(GLenum type, const QByteArray& context)
 	return 0;
 }
 
-GLuint GLWidget::loadShaderFile(GLenum type, const char *path)
+GLuint GLWidget::loadShaderFile(GLenum type, QString path)
 {
 	QFile f(path);
 	if (!f.open(QIODevice::ReadOnly)) {
