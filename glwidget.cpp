@@ -1,6 +1,7 @@
 #include "glwidget.h"
 #include <QDebug>
 #include <QOpenGLFramebufferObject>
+#include <QFileDialog>
 
 //#define FSH	"stackheap.fsh"
 #define FSH	"mandelbrot.fsh"
@@ -8,7 +9,7 @@
 //#define FSH	"light.fsh"
 //#define FSH	"alg.fsh"
 
-#define SAVESZ	600
+#define SAVESZ	3200
 
 GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 {
@@ -106,6 +107,11 @@ void GLWidget::paintGL()
 	QLabel *l = new QLabel;
 	l->setPixmap(QPixmap::fromImage(data.img));
 	l->show();
+
+	QString file = QFileDialog::getSaveFileName(this, "Save to...", QString(), "PNG file (*.png)");
+	if (file.isEmpty())
+		return;
+	data.img.save(file, "png");
 }
 
 void GLWidget::mousePressEvent(QMouseEvent *e)
