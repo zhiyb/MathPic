@@ -1,6 +1,7 @@
 #version 330
 #extension GL_ARB_gpu_shader_fp64 : enable
 in vec2 position;
+uniform float animation;
 uniform float zoom;
 uniform dvec2 move;
 out vec4 fragColor;
@@ -26,9 +27,10 @@ void main(void)
     int cG = int(log(k)*47.);
     int cB = int(128.-log(k)*23.);
 #else
-    int cR = k*16;
-    int cG = k*8;
-    int cB = k;
+    int ani = int(animation < 0.5 ? animation * 512 : (1 - animation) * 512);
+    int cR = int(k*16 +ani);
+    int cG = int(k*8 +ani);
+    int cB = int(k +ani);
 #endif
 
     gl_FragColor.r = float(cR % 256) / 256.;

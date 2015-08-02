@@ -3,6 +3,7 @@
 in vec2 position;
 uniform float zoom;
 uniform dvec2 move;
+uniform float animation;
 out vec4 fragColor;
 
 double atan2(double y, double x)
@@ -44,9 +45,9 @@ void main(void)
     double i = (pos.x + 1.) / 2. * DIM;
     double j = (-pos.y + 1.) / 2. * DIM;
 
-    int cR = int(DIM-BL(2 * i, 2 * j));
-    int cG = int(BL(j, i)+128);
-    int cB = BL(i, j);
+    int cR = int(DIM-BL(2 * i, 2 * j)+animation * 256.);
+    int cG = int(BL(j, i)+128+animation * 256.);
+    int cB = int(BL(i, j)+animation * 256.);
 
     fragColor.r = float(cR % 256) / 256.;
     fragColor.g = float(cG % 256) / 256.;
