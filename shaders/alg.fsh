@@ -14,9 +14,9 @@ float atan2(float y, float x)
     if (x >= 0)
         return atan(y / x);
     else if (y >= 0)
-        return atan(y / x) + 2*acos(0);
+        return atan(y / x) + acos(-1);
     else
-        return atan(y / x) - 2*acos(0);
+        return atan(y / x) - acos(-1);
 }
 
 void main(void)
