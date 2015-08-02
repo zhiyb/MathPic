@@ -4,9 +4,11 @@
 #include <QtWidgets>
 #include <QOpenGLFramebufferObject>
 #include <QOpenGLFunctions>
+#include "save.h"
 
 class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
+	Q_OBJECT
 public:
 	explicit GLWidget(QWidget *parent = 0);
 
@@ -19,14 +21,22 @@ protected:
 	void mouseMoveEvent(QMouseEvent *e);
 	void keyPressEvent(QKeyEvent *e);
 
+private slots:
+	void startRender(void);
+
 private:
 	//void saveImage(void);
 	void render(void);
+	void save(void);
 	void loadShaders(QString file);
 	GLuint loadShader(GLenum type, const QByteArray& context);
 	GLuint loadShaderFile(GLenum type, QString path);
 
 	struct data_t {
+		struct save_t {
+			QSize blockSize, blockCount;
+			QPoint position;
+		} save;
 		struct loc_t {
 			GLuint vertex, projection;
 			GLuint zoom, move;
@@ -43,6 +53,7 @@ private:
 		int currentFile, nextFile;
 		QString filePath;
 	} data;
+	Save *saveDialog;
 	static const char *fileList[];
 };
 

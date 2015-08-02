@@ -1,11 +1,14 @@
 #include "glwidget.h"
+#include "save.h"
 #include <QDebug>
 #include <QOpenGLFramebufferObject>
 #include <QFileDialog>
+#include <QDialog>
+#include <QVBoxLayout>
 
 #define RESPFX	":/data/shaders/"
 
-#define SAVESZ	2400
+//#define SAVESZ	2400
 
 const char *GLWidget::fileList[] = {
 	RESPFX "mandelbrot.fsh",
@@ -34,6 +37,8 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 	data.vsh = 0;
 	data.fsh = 0;
 	data.program = 0;
+	data.fbo = 0;
+	saveDialog = 0;
 
 	QSurfaceFormat fmt = format();
 	fmt.setSamples(0);
@@ -43,6 +48,11 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 
 	setFocusPolicy(Qt::StrongFocus);
 	setAutoFillBackground(false);
+
+	saveDialog = new Save(this);
+	saveDialog->setAttribute(Qt::WA_DeleteOnClose, false);
+	saveDialog->close();
+	connect(saveDialog, SIGNAL(startRender()), this, SLOT(startRender()));
 }
 
 void GLWidget::initializeGL()
@@ -54,7 +64,7 @@ void GLWidget::initializeGL()
 
 	data.program = glCreateProgram();
 	loadShaders(fileList[data.currentFile]);
-	data.fbo = new QOpenGLFramebufferObject(SAVESZ, SAVESZ);
+	//data.fbo = new QOpenGLFramebufferObject(SAVESZ, SAVESZ);
 }
 
 void GLWidget::resizeGL(int w, int h)
@@ -72,6 +82,11 @@ void GLWidget::render()
 	glClear(GL_COLOR_BUFFER_BIT);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glFinish();
+}
+
+void GLWidget::save()
+{
+	saveDialog->show();
 }
 
 void GLWidget::loadShaders(QString file)
@@ -131,21 +146,38 @@ void GLWidget::paintGL()
 		return;
 	data.saving = false;
 
+	delete data.fbo;
+	data.fbo = new QOpenGLFramebufferObject(data.save.blockSize);
 	data.fbo->bind();
-	resizeGL(SAVESZ, SAVESZ);
+	resizeGL(data.save.blockSize.width(), data.save.blockSize.height());
+render:
 	render();
+	bool done = data.save.position.y() == data.save.blockCount.height() - 1 &&
+			data.save.position.x() == data.save.blockCount.width() - 1;
+	saveDialog->addImage(QPoint(data.save.position.x() * data.save.blockSize.width(),
+				    data.save.position.y() * data.save.blockSize.height()),
+			     data.fbo->toImage(), done);
+	if (!done) {
+		if (data.save.position.x() != data.save.blockCount.width() - 1)
+			data.save.position.setX(data.save.position.x() + 1);
+		else {
+			data.save.position.setX(0);
+			data.save.position.setY(data.save.position.y() + 1);
+		}
+		goto render;
+	}
 	data.fbo->release();
-	data.img = data.fbo->toImage();
 	resizeGL(width(), height());
 
-	QLabel *l = new QLabel;
+	/*QLabel *l = new QLabel;
 	l->setPixmap(QPixmap::fromImage(data.img));
+	l->setAttribute(Qt::WA_DeleteOnClose, false);
 	l->show();
 
 	QString file = QFileDialog::getSaveFileName(this, "Save to...", QString(), "PNG file (*.png)");
 	if (file.isEmpty())
 		return;
-	data.img.save(file, "png");
+	data.img.save(file, "png");*/
 }
 
 void GLWidget::mousePressEvent(QMouseEvent *e)
@@ -167,14 +199,15 @@ void GLWidget::keyPressEvent(QKeyEvent *e)
 	switch (e->key()) {
 	case 'q':
 	case 'Q':
+	case Qt::Key_Escape:
 		qApp->quit();
 		break;
 	case 's':
 	case 'S':
 		e->accept();
 		qDebug() << "Save...";
-		data.saving = true;
-		update();
+		saveDialog->show();
+		saveDialog->raise();
 		break;
 	case Qt::Key_Up:
 	case Qt::Key_Left:
@@ -204,6 +237,15 @@ void GLWidget::keyPressEvent(QKeyEvent *e)
 		data.currentFile = 0;	// Set as different value for forced loading
 		break;
 	};
+}
+
+void GLWidget::startRender()
+{
+	data.save.blockSize = QSize(saveDialog->spBlockSize[0]->value(), saveDialog->spBlockSize[1]->value());
+	data.save.blockCount = QSize(saveDialog->spBlockCount[0]->value(), saveDialog->spBlockCount[1]->value());
+	data.save.position = QPoint(0, 0);
+	data.saving = true;
+	update();
 }
 
 void GLWidget::wheelEvent(QWheelEvent *e)
