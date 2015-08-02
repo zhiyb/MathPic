@@ -8,8 +8,6 @@
 
 #define RESPFX	":/data/shaders/"
 
-//#define SAVESZ	2400
-
 const char *GLWidget::fileList[] = {
 	RESPFX "mandelbrot.fsh",
 	RESPFX "mandelbrot2.fsh",
@@ -37,7 +35,6 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 	data.vsh = 0;
 	data.fsh = 0;
 	data.program = 0;
-	data.fbo = 0;
 	saveDialog = 0;
 
 	QSurfaceFormat fmt = format();
@@ -49,7 +46,7 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 	setFocusPolicy(Qt::StrongFocus);
 	setAutoFillBackground(false);
 
-	saveDialog = new Save(this);
+	saveDialog = new Save;
 	saveDialog->setAttribute(Qt::WA_DeleteOnClose, false);
 	saveDialog->close();
 	connect(saveDialog, SIGNAL(startRender()), this, SLOT(startRender()));
@@ -64,7 +61,6 @@ void GLWidget::initializeGL()
 
 	data.program = glCreateProgram();
 	loadShaders(fileList[data.currentFile]);
-	//data.fbo = new QOpenGLFramebufferObject(SAVESZ, SAVESZ);
 }
 
 void GLWidget::resizeGL(int w, int h)
@@ -82,6 +78,16 @@ void GLWidget::render()
 	glClear(GL_COLOR_BUFFER_BIT);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glFinish();
+}
+
+void GLWidget::selectRegion(QRect rect, QSize size)
+{
+	float w = size.width(), h = size.height(), asp = h / w;
+	data.projection.setToIdentity();
+	data.projection.ortho(-1. + 2. * rect.left() / w,
+			      -1. + 2. * rect.right() / w,
+			      -asp + 2. * asp * rect.top() / h,
+			      -asp + 2. * asp * rect.bottom() / h, -1., 1.);
 }
 
 void GLWidget::save()
@@ -146,17 +152,20 @@ void GLWidget::paintGL()
 		return;
 	data.saving = false;
 
-	delete data.fbo;
-	data.fbo = new QOpenGLFramebufferObject(data.save.blockSize);
-	data.fbo->bind();
+	QOpenGLFramebufferObject fbo(data.save.blockSize);
+	fbo.bind();
 	resizeGL(data.save.blockSize.width(), data.save.blockSize.height());
 render:
+	QRect region;
+	region.setLeft(data.save.position.x() * data.save.blockSize.width());
+	region.setWidth(data.save.blockSize.width());
+	region.setTop(data.save.position.y() * data.save.blockSize.height());
+	region.setHeight(data.save.blockSize.height());
+	selectRegion(region, data.save.totalSize());
 	render();
 	bool done = data.save.position.y() == data.save.blockCount.height() - 1 &&
 			data.save.position.x() == data.save.blockCount.width() - 1;
-	saveDialog->addImage(QPoint(data.save.position.x() * data.save.blockSize.width(),
-				    data.save.position.y() * data.save.blockSize.height()),
-			     data.fbo->toImage(), done);
+	saveDialog->addImage(region.topLeft(), fbo.toImage(), done);
 	if (!done) {
 		if (data.save.position.x() != data.save.blockCount.width() - 1)
 			data.save.position.setX(data.save.position.x() + 1);
@@ -166,18 +175,8 @@ render:
 		}
 		goto render;
 	}
-	data.fbo->release();
+	fbo.release();
 	resizeGL(width(), height());
-
-	/*QLabel *l = new QLabel;
-	l->setPixmap(QPixmap::fromImage(data.img));
-	l->setAttribute(Qt::WA_DeleteOnClose, false);
-	l->show();
-
-	QString file = QFileDialog::getSaveFileName(this, "Save to...", QString(), "PNG file (*.png)");
-	if (file.isEmpty())
-		return;
-	data.img.save(file, "png");*/
 }
 
 void GLWidget::mousePressEvent(QMouseEvent *e)
@@ -230,7 +229,8 @@ void GLWidget::keyPressEvent(QKeyEvent *e)
 	case 'o':
 	case 'O':
 		e->accept();
-		data.filePath = QFileDialog::getOpenFileName(this, "Open shader file...", QString(), "Fragment shader (*.fsh)");
+		data.filePath = QFileDialog::getOpenFileName(this, "Open shader file...", QString(),
+							     "Fragment shader (*.fsh)");
 		if (data.filePath.isEmpty())
 			break;
 		data.nextFile = -1;
@@ -288,4 +288,10 @@ GLuint GLWidget::loadShaderFile(GLenum type, QString path)
 	QByteArray context = f.readAll();
 	f.close();
 	return loadShader(type, context);
+}
+
+
+QSize GLWidget::data_t::save_t::totalSize()
+{
+	return QSize(blockSize.width() * blockCount.width(), blockSize.height() * blockCount.height());
 }

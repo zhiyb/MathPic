@@ -25,8 +25,8 @@ private slots:
 	void startRender(void);
 
 private:
-	//void saveImage(void);
 	void render(void);
+	void selectRegion(QRect rect, QSize size);
 	void save(void);
 	void loadShaders(QString file);
 	GLuint loadShader(GLenum type, const QByteArray& context);
@@ -34,6 +34,7 @@ private:
 
 	struct data_t {
 		struct save_t {
+			QSize totalSize();
 			QSize blockSize, blockCount;
 			QPoint position;
 		} save;
@@ -47,7 +48,6 @@ private:
 		QPoint prevPos;
 		QVector<QVector2D> vertex;
 		QMatrix4x4 projection;
-		QOpenGLFramebufferObject *fbo;
 		QImage img;
 		bool saving;
 		int currentFile, nextFile;
