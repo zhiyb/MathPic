@@ -28,7 +28,7 @@ int BL(float i, float j){
 
 void main(void)
 {
-    dvec2 pos = dvec2(position) / double(pow(1.1, zoom)) + dvec2(move) / 1024LF;
+    dvec2 pos = dvec2(position) / double(pow(1.1, zoom)) + dvec2(move) / 1024.;
     float DIM = 1024.;
     float i = float((pos.x + 1.) / 2. * DIM);
     float j = float((-pos.y + 1.) / 2. * DIM);
