@@ -1,7 +1,7 @@
 #include "save.h"
 
-#define DEFSZ	100
-//#define DEFSZ	1920
+#define DEFSZ	(192 * 5)
+#define DEFCNT	(100 / 5)
 #define OUTSZ	1024
 
 Save::Save(QWidget *parent) : QDialog(parent)
@@ -35,8 +35,8 @@ Save::Save(QWidget *parent) : QDialog(parent)
 	gbCountLayout->addWidget(spBlockCount[1] = new QSpinBox);
 	for (int i = 0; i != 2; i++) {
 		spBlockCount[i]->setMinimum(1);
-		spBlockCount[i]->setMaximum(100);
-		spBlockCount[i]->setValue(10);
+		spBlockCount[i]->setMaximum(1000);
+		spBlockCount[i]->setValue(DEFCNT);
 	}
 
 	sLayout->addWidget(lFinalRes = new QLabel);
@@ -89,15 +89,14 @@ void Save::render()
 		goto allocFailed;
 	else if (img->isNull())
 		goto nullImage;
-	lwProgess->addItem(tr("QPixmap creation succeed, waiting..."));
-	lOutput->resize(img->size());
+	lwProgess->addItem(tr("QImage creation succeed, waiting..."));
 	emit startRender();
 	return;
 nullImage:
 	delete img;
 	img = 0;
 allocFailed:
-	lwProgess->addItem(tr("QPixmap creation failed!"));
+	lwProgess->addItem(tr("QImage creation failed!"));
 }
 
 void Save::save()
