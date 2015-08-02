@@ -280,6 +280,7 @@ void GLWidget::keyPressEvent(QKeyEvent *e)
 		data.zoom -= 1.;
 		break;
 	};
+	updateTitle();
 	update();
 }
 
