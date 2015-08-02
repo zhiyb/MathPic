@@ -81,9 +81,9 @@ void Save::render()
 		delete img;
 	lwProgess->clear();
 	tStart = QTime::currentTime();
-	lwProgess->addItem(tr("Rendering start at %1:%2:%3.")
-			   .arg(tStart.hour(), 2).arg(tStart.minute(), 2).arg(tStart.second(), 2));
-	lwProgess->addItem(tr("Allocating memory..."));
+	lwProgess->addItem(tr("Rendering start at %1.").arg(tStart.toString("hh:mm:ss")));
+	QSize size(finalRes());
+	lwProgess->addItem(tr("Allocating memory (%1x%2)...").arg(size.width()).arg(size.height()));
 	img = new QImage(finalRes(), QImage::Format_RGB888);
 	if (img == 0)
 		goto allocFailed;
@@ -93,6 +93,7 @@ void Save::render()
 	emit startRender();
 	return;
 nullImage:
+	lwProgess->addItem(tr("Created QImage is a null image."));
 	delete img;
 	img = 0;
 allocFailed:
@@ -129,8 +130,7 @@ void Save::addImage(QPoint pos, QImage img, bool done)
 		lOutput->setPixmap(QPixmap::fromImage(outImg));
 		lOutput->resize(outImg.size());
 		QTime tEnd = QTime::currentTime();
-		lwProgess->addItem(tr("Rendering finished at %1:%2:%3.")
-				   .arg(tEnd.hour(), 2).arg(tEnd.minute(), 2).arg(tEnd.second(), 2));
+		lwProgess->addItem(tr("Rendering finished at %1.").arg(tEnd.toString("hh:mm:ss")));
 		lwProgess->addItem(tr("Time elapsed: %1s.").arg(tStart.secsTo(tEnd)));
 		lwProgess->scrollToBottom();
 	}
