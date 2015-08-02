@@ -1,4 +1,4 @@
-#version 130
+#version 330
 in vec2 vertex;
 uniform mat4 projection;
 out vec2 position;

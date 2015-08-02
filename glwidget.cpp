@@ -39,6 +39,13 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 
 	QSurfaceFormat fmt = format();
 	fmt.setSamples(0);
+	fmt.setVersion(3, 3);
+	fmt.setOption(QSurfaceFormat::DeprecatedFunctions);
+	fmt.setProfile(QSurfaceFormat::CompatibilityProfile);
+	fmt.setDepthBufferSize(0);
+	fmt.setStencilBufferSize(0);
+	fmt.setAlphaBufferSize(0);
+	fmt.setSamples(0);
 	setFormat(fmt);
 	QSurfaceFormat::setDefaultFormat(fmt);
 	setFormat(fmt);
@@ -57,7 +64,11 @@ void GLWidget::initializeGL()
 	initializeOpenGLFunctions();
 	qDebug() << format();
 
-	//glEnable(GL_MULTISAMPLE);
+	glDisable(GL_MULTISAMPLE);
+	glDisable(GL_BLEND);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_STENCIL_TEST);
+	glDisable(GL_SCISSOR_TEST);
 
 	data.program = glCreateProgram();
 	loadShaders(fileList[data.currentFile]);

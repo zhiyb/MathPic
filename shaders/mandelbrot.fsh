@@ -1,8 +1,9 @@
-#version 130
+#version 330
 #extension GL_ARB_gpu_shader_fp64 : enable
 in vec2 position;
 uniform float zoom;
 uniform vec2 move;
+out vec4 fragColor;
 
 void main(void)
 {
@@ -21,8 +22,8 @@ void main(void)
     int cG = int(255.*pow((n-80.)/800.,.7));
     int cB = int(255.*pow((n-80.)/800.,.5));
 
-    gl_FragColor.r = float(cR % 256) / 256.;
-    gl_FragColor.g = float(cG % 256) / 256.;
-    gl_FragColor.b = float(cB % 256) / 256.;
-    gl_FragColor.a = 1.;
+    fragColor.r = float(cR % 256) / 256.;
+    fragColor.g = float(cG % 256) / 256.;
+    fragColor.b = float(cB % 256) / 256.;
+    fragColor.a = 1.;
 }
