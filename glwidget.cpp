@@ -215,38 +215,41 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e)
 
 void GLWidget::keyPressEvent(QKeyEvent *e)
 {
+	const float moveTh = 10;
 	switch (e->key()) {
-	case 'q':
+	case 'r':	// Refresh
+	case 'R':
+		break;
+	case 'q':	// Quit
 	case 'Q':
 	case Qt::Key_Escape:
 		qApp->quit();
-		break;
-	case 's':
+		return;
+	case 's':	// Render & save
 	case 'S':
 		e->accept();
-		qDebug() << "Save...";
 		saveDialog->show();
 		saveDialog->raise();
-		break;
-	case Qt::Key_Up:
-	case Qt::Key_Left:
+		return;
+	case '<':	// Previous shader
+	case ',':
 		e->accept();
 		qDebug() << "Previous...";
 		if (data.nextFile > 0) {
 			data.nextFile--;
 			update();
 		}
-		break;
-	case Qt::Key_Down:
-	case Qt::Key_Right:
+		return;
+	case '>':	// Next shader
+	case '.':
 		e->accept();
 		qDebug() << "Next...";
 		if (fileList[data.nextFile + 1] != 0) {
 			data.nextFile++;
 			update();
 		}
-		break;
-	case 'o':
+		return;
+	case 'o':	// Open shader
 	case 'O':
 		e->accept();
 		data.filePath = QFileDialog::getOpenFileName(this, "Open shader file...", QString(),
@@ -255,8 +258,29 @@ void GLWidget::keyPressEvent(QKeyEvent *e)
 			break;
 		data.nextFile = -1;
 		data.currentFile = 0;	// Set as different value for forced loading
+		return;
+	case Qt::Key_Up:
+		data.moveY += -moveTh * 2.f / pow(1.1, data.zoom) / (double)width();
+		break;
+	case Qt::Key_Down:
+		data.moveY += moveTh * 2.f / pow(1.1, data.zoom) / (double)width();
+		break;
+	case Qt::Key_Left:
+		data.moveX += moveTh * 2.f / pow(1.1, data.zoom) / (double)width();
+		break;
+	case Qt::Key_Right:
+		data.moveX += -moveTh * 2.f / pow(1.1, data.zoom) / (double)width();
+		break;
+	case '+':	// Zoom in
+	case '=':
+		data.zoom += 1.;
+		break;
+	case '-':	// Zoom out
+	case '_':
+		data.zoom -= 1.;
 		break;
 	};
+	update();
 }
 
 void GLWidget::startRender()
