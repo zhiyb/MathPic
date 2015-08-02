@@ -1,5 +1,7 @@
 #include "save.h"
 
+#define OUTSZ	1024
+
 Save::Save(QWidget *parent) : QDialog(parent)
 {
 	img = 0;
@@ -40,6 +42,9 @@ Save::Save(QWidget *parent) : QDialog(parent)
 	QPushButton *pbRender = new QPushButton(tr("Render"));
 	sLayout->addWidget(pbRender);
 
+	QPushButton *pbSave = new QPushButton(tr("Save image"));
+	sLayout->addWidget(pbSave);
+
 	layout->addWidget(lwProgess = new QListWidget);
 
 	QScrollArea *saOutput = new QScrollArea;
@@ -52,6 +57,7 @@ Save::Save(QWidget *parent) : QDialog(parent)
 		connect(spBlockCount[i], SIGNAL(valueChanged(int)), this, SLOT(updateRes()));
 	}
 	connect(pbRender, SIGNAL(clicked(bool)), this, SLOT(render()));
+	connect(pbSave, SIGNAL(clicked(bool)), this, SLOT(save()));
 	updateRes();
 }
 
@@ -92,14 +98,33 @@ allocFailed:
 	lwProgess->addItem(tr("QPixmap creation failed!"));
 }
 
+void Save::save()
+{
+	if (img == 0 || img->isNull())
+		return;
+	QString file = QFileDialog::getSaveFileName(this, "Save image to...", QString(), "PNG file (*.png)");
+	if (file.isEmpty())
+		return;
+	QTime tStart = QTime::currentTime();
+	if (!img->save(file))
+		return;
+	QTime tEnd = QTime::currentTime();
+	lwProgess->addItem(tr("Image saved, time elapsed: %1s.").arg(tStart.secsTo(tEnd)));
+	delete img;
+	img = 0;
+	lwProgess->addItem(tr("Image memory freed."));
+}
+
 void Save::addImage(QPoint pos, QImage img, bool done)
 {
 	lwProgess->addItem(tr("Image received at (%1,%2).").arg(pos.x()).arg(pos.y()));
 	QPainter painter(this->img);
 	painter.drawImage(pos, img);
 	painter.end();
-	lOutput->setPixmap(QPixmap::fromImage(*this->img));
 	if (done) {
+		QImage outImg = this->img->scaled(OUTSZ, OUTSZ, Qt::KeepAspectRatio);
+		lOutput->setPixmap(QPixmap::fromImage(outImg));
+		lOutput->resize(outImg.size());
 		QTime tEnd = QTime::currentTime();
 		lwProgess->addItem(tr("Rendering finished at %1:%2:%3.")
 				   .arg(tEnd.hour()).arg(tEnd.minute()).arg(tEnd.second()));

@@ -17,12 +17,13 @@ signals:
 public slots:
 
 private slots:
-	void updateRes(void);
-	void render(void);
+	void updateRes();
+	void render();
+	void save();
 	void addImage(QPoint pos, QImage img, bool done);
 
 private:
-	QSize finalRes(void);
+	QSize finalRes();
 
 	enum Dim {X = 0, Y = 1};
 	QTime tStart;
@@ -30,6 +31,8 @@ private:
 	QSpinBox *spBlockSize[2], *spBlockCount[2];
 	QLabel *lFinalRes, *lOutput;
 	QListWidget *lwProgess;
+	//QVector<QVector<QLabel *> > lOutputArray;
+	//QVector<QVector<QImage> > lOutputArray;
 };
 
 #endif // SAVE_H
