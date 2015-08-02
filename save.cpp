@@ -109,8 +109,10 @@ void Save::save()
 	if (file.isEmpty())
 		return;
 	QTime tStart = QTime::currentTime();
-	if (!img->save(file))
+	if (!img->save(file)) {
+		lwProgess->addItem(tr("Save to image failed!"));
 		return;
+	}
 	QTime tEnd = QTime::currentTime();
 	lwProgess->addItem(tr("Image saved, time elapsed: %1s.").arg(tStart.secsTo(tEnd)));
 	delete img;
