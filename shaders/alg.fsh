@@ -21,7 +21,7 @@ double atan2(double y, double x)
 
 void main(void)
 {
-    dvec2 pos = dvec2(position) / double(pow(1.1, zoom)) + double(move) / 1024LF;
+    dvec2 pos = dvec2(position) / double(pow(1.1, zoom)) + dvec2(move) / 1024LF;
     float DIM = 1024.;
     double i = (pos.x + 1.) / 2. * DIM;
     double j = (-pos.y + 1.) / 2. * DIM;
