@@ -61,6 +61,7 @@ void GLWidget::initializeGL()
 
 	data.program = glCreateProgram();
 	loadShaders(fileList[data.currentFile]);
+	updateTitle();
 }
 
 void GLWidget::resizeGL(int w, int h)
@@ -142,6 +143,7 @@ void GLWidget::paintGL()
 		data.zoom = 0;
 		data.moveX = 0;
 		data.moveY = 0;
+		updateTitle();
 	}
 	glUniform1f(data.loc.zoom, data.zoom);
 	glUniform2f(data.loc.move, data.moveX, data.moveY);
@@ -190,6 +192,7 @@ void GLWidget::mouseMoveEvent(QMouseEvent *e)
 	data.moveX += 1024.f * -p.x() * 2.f / pow(1.1, data.zoom) / (float)width();
 	data.moveY += 1024.f * p.y() * 2.f / pow(1.1, data.zoom) / (float)width();
 	data.prevPos = e->pos();
+	updateTitle();
 	update();
 }
 
@@ -248,11 +251,18 @@ void GLWidget::startRender()
 	update();
 }
 
+void GLWidget::updateTitle()
+{
+	QString file = data.currentFile == -1 ? data.filePath : fileList[data.currentFile];
+	emit titleUpdate(tr("MathPic <(%1, %2) * %3> - %4")
+			 .arg(data.moveX / 1024.).arg(data.moveY / 1024.).arg(pow(1.1, data.zoom)).arg(file));
+}
+
 void GLWidget::wheelEvent(QWheelEvent *e)
 {
 	float zoom = (float)e->angleDelta().y() / 120.;
 	data.zoom += zoom;
-	qDebug() << "Zooming level: " << pow(1.1, data.zoom);
+	updateTitle();
 	update();
 }
 

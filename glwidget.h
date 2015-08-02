@@ -12,6 +12,9 @@ class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 public:
 	explicit GLWidget(QWidget *parent = 0);
 
+signals:
+	void titleUpdate(QString str);
+
 protected:
 	void initializeGL();
 	void resizeGL(int w, int h);
@@ -22,12 +25,13 @@ protected:
 	void keyPressEvent(QKeyEvent *e);
 
 private slots:
-	void startRender(void);
+	void startRender();
 
 private:
-	void render(void);
+	void updateTitle();
+	void render();
 	void selectRegion(QRect rect, QSize size);
-	void save(void);
+	void save();
 	void loadShaders(QString file);
 	GLuint loadShader(GLenum type, const QByteArray& context);
 	GLuint loadShaderFile(GLenum type, QString path);
