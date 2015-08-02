@@ -1,12 +1,13 @@
-#version 130
+#version 330
 #extension GL_ARB_gpu_shader_fp64 : enable
 in vec2 position;
 uniform float zoom;
-uniform vec2 move;
+uniform dvec2 move;
+out vec4 fragColor;
 
 void main(void)
 {
-    dvec2 pos = dvec2(position) / double(pow(1.1, zoom)) + dvec2(move) / 1024.;
+    dvec2 pos = dvec2(position) / double(pow(1.1, zoom)) + move;
     float DIM = 1024.;
     double i = (pos.x + 1.) / 2. * DIM;
     double j = (-pos.y + 1.) / 2. * DIM;

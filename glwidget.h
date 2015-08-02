@@ -3,10 +3,10 @@
 
 #include <QtWidgets>
 #include <QOpenGLFramebufferObject>
-#include <QOpenGLFunctions_3_3_Core>
+#include <QOpenGLFunctions_4_0_Core>
 #include "save.h"
 
-class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
+class GLWidget : public QOpenGLWidget, protected QOpenGLFunctions_4_0_Core
 {
 	Q_OBJECT
 public:
@@ -43,12 +43,13 @@ private:
 			QPoint position;
 		} save;
 		struct loc_t {
-			GLuint vertex, projection;
-			GLuint zoom, move;
+			GLint vertex, projection;
+			GLint zoom, move;
+			GLint animation;
 		} loc;
 		GLuint program, fsh, vsh;
 		GLfloat zoom;
-		GLfloat moveX, moveY;
+		GLdouble moveX, moveY;
 		QPoint prevPos;
 		QVector<QVector2D> vertex;
 		QMatrix4x4 projection;

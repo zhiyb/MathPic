@@ -39,7 +39,7 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 
 	QSurfaceFormat fmt = format();
 	fmt.setSamples(0);
-	fmt.setVersion(3, 3);
+	fmt.setVersion(4, 0);
 	fmt.setOption(QSurfaceFormat::DeprecatedFunctions);
 	fmt.setProfile(QSurfaceFormat::CompatibilityProfile);
 	fmt.setDepthBufferSize(0);
@@ -139,6 +139,7 @@ void GLWidget::loadShaders(QString file)
 	data.loc.projection = glGetUniformLocation(data.program, "projection");
 	data.loc.zoom = glGetUniformLocation(data.program, "zoom");
 	data.loc.move = glGetUniformLocation(data.program, "move");
+	data.loc.animation = glGetUniformLocation(data.program, "animation");
 	glEnableVertexAttribArray(data.loc.vertex);
 	glUseProgram(data.program);
 }
@@ -157,8 +158,13 @@ void GLWidget::paintGL()
 		updateTitle();
 	}
 	glUniform1f(data.loc.zoom, data.zoom);
-	glUniform2f(data.loc.move, data.moveX, data.moveY);
+	glUniform2d(data.loc.move, data.moveX, data.moveY);
 	glVertexAttribPointer(data.loc.vertex, 2, GL_FLOAT, GL_FALSE, 0, data.vertex.constData());
+
+	if (data.loc.animation != -1) {
+		glUniform1f((float)data.loc.animation, QTime::currentTime().msec() / 1000.);
+		update();
+	}
 
 	render();
 	if (!data.saving)
@@ -200,8 +206,8 @@ void GLWidget::mousePressEvent(QMouseEvent *e)
 void GLWidget::mouseMoveEvent(QMouseEvent *e)
 {
 	QPointF p = e->pos() - data.prevPos;
-	data.moveX += 1024.f * -p.x() * 2.f / pow(1.1, data.zoom) / (float)width();
-	data.moveY += 1024.f * p.y() * 2.f / pow(1.1, data.zoom) / (float)width();
+	data.moveX += -p.x() * 2.f / pow(1.1, data.zoom) / (double)width();
+	data.moveY += p.y() * 2.f / pow(1.1, data.zoom) / (double)width();
 	data.prevPos = e->pos();
 	updateTitle();
 	update();
