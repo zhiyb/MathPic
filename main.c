@@ -11,6 +11,8 @@
 #define BLOCKSZ		128
 #define BLOCKCNT	((DIM + BLOCKSZ - 1) / BLOCKSZ)
 
+//#define PRINTMSG
+
 uint8_t *pixels;
 static struct block_t {
 	uint32_t x, y;
@@ -42,14 +44,18 @@ loop:
 		//fprintf(stderr, "Thread %u done.\n", id);
 		return NULL;
 	}
+#ifdef PRINTMSG
 	fprintf(stderr, "Thread %u task block: (%u, %u).\n", id, bx, by);
+#endif
 	bx *= BLOCKSZ;
 	by *= BLOCKSZ;
 	uint32_t bw, bh;
 	bw = DIM - bx < BLOCKSZ ? DIM - bx : BLOCKSZ;
 	bh = DIM - by < BLOCKSZ ? DIM - by : BLOCKSZ;
+#ifdef PRINTMSG
 	fprintf(stderr, "Thread %u task region: (%u, %u, %u, %u).\n",
 			id, bx, by, bw, bh);
+#endif
 	int x, y;
 	for (y = by; y < by + bh; y++)
 		for (x = bx; x < bx + bw; x++) {
@@ -138,9 +144,7 @@ int main(int argc, char *argv[])
 
 	// Write out pixels
 	fputs("Writing output...\n", stderr);
-	for (int y = 0; y < DIM; y++)
-		for (int x = 0; x < DIM; x++)
-			fwrite(pixels, 1, DIM * DIM * 3, stdout);
+	fwrite(pixels, 1, DIM * DIM * 3, stdout);
 	time_t tOutput = time(NULL);
 	fprintf(stderr, "Time elapsed: %lds\n", tOutput - tRender);
 	fprintf(stderr, "Total time elapsed: %lds\n", tOutput - tStart);
