@@ -114,7 +114,8 @@ void Save::save()
 		return;
 	}
 	QTime tEnd = QTime::currentTime();
-	lwProgess->addItem(tr("Image saved, time elapsed: %1s.").arg(tStart.secsTo(tEnd)));
+	lwProgess->addItem(tr("Image saving finished at %1.").arg(tEnd.toString("hh:mm:ss")));
+	lwProgess->addItem(tr("Time elapsed: %1.%2s.").arg(tStart.secsTo(tEnd)).arg(tStart.msecsTo(tEnd) % 1000));
 	delete img;
 	img = 0;
 	lwProgess->addItem(tr("Image memory freed."));
@@ -123,18 +124,24 @@ void Save::save()
 
 void Save::addImage(QPoint pos, QImage img, bool done)
 {
-	lwProgess->addItem(tr("Image received at (%1,%2).").arg(pos.x()).arg(pos.y()));
-	QPainter painter(this->img);
-	painter.drawImage(pos.x(), this->img->height() - pos.y() - img.height(), img);
-	painter.end();
+	//lwProgess->addItem(tr("Image received at (%1,%2).").arg(pos.x()).arg(pos.y()));
+	img = img.convertToFormat(QImage::Format_RGB888);
+	for (int i = 0; i < img.height(); i++)
+		memcpy(this->img->scanLine(this->img->height() - pos.y() - img.height() + i) + pos.x() * 3,
+		       img.constScanLine(i), img.bytesPerLine());
 	if (done) {
+		QTime tRender = QTime::currentTime();
+		lwProgess->addItem(tr("Rendering finished at %1.").arg(tRender.toString("hh:mm:ss")));
+		lwProgess->addItem(tr("Time elapsed: %1.%2s.").arg(tStart.secsTo(tRender)).arg(tStart.msecsTo(tRender) % 1000));
+		lwProgess->scrollToBottom();
 		QImage outImg = this->img->scaled(OUTSZ, OUTSZ, Qt::KeepAspectRatio);
 		lOutput->setPixmap(QPixmap::fromImage(outImg));
 		lOutput->resize(outImg.size());
+#if 0
 		QTime tEnd = QTime::currentTime();
-		lwProgess->addItem(tr("Rendering finished at %1.").arg(tEnd.toString("hh:mm:ss")));
-		lwProgess->addItem(tr("Time elapsed: %1s.").arg(tStart.secsTo(tEnd)));
-		lwProgess->scrollToBottom();
+		lwProgess->addItem(tr("Image scalling finished at %1.").arg(tEnd.toString("hh:mm:ss")));
+		lwProgess->addItem(tr("Time elapsed: %1.%2s.").arg(tRender.secsTo(tEnd)).arg(tRender.msecsTo(tEnd) % 1000));
+#endif
 	}
 }
 
