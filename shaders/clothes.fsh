@@ -1,10 +1,11 @@
 #version 330
 #extension GL_ARB_gpu_shader_fp64 : enable
-in vec2 position;
 uniform float animation;
-uniform float zoom;
-uniform dvec2 move;
 out vec4 fragColor;
+
+flat in dvec2 position;
+in vec2 posOffset;
+in float DIM;
 
 double _sq(double x)
 {
@@ -18,10 +19,9 @@ float sin(double x)
 
 void main(void)
 {
-    dvec2 pos = dvec2(position) / double(pow(1.1, zoom)) + move;
-    float DIM = 1024.;
-    double i = (pos.x + 1.) / 2. * DIM;
-    double j = (-pos.y + 1.) / 2. * DIM;
+    dvec2 pos = position + dvec2(posOffset);
+    double i = pos.x;
+    double j = pos.y;
 
     double s=3./(j+99.);
     double y=(j+sin((i*i+_sq(j-700.)*5.)/100./DIM +animation*2.*acos(-1) )*35.)*s;

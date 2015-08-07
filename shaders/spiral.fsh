@@ -1,10 +1,11 @@
 #version 330
 #extension GL_ARB_gpu_shader_fp64 : enable
-in vec2 position;
-uniform float zoom;
-uniform dvec2 move;
 uniform float animation;
 out vec4 fragColor;
+
+flat in dvec2 position;
+in vec2 posOffset;
+in float DIM;
 
 double atan2(double y, double x)
 {
@@ -40,10 +41,9 @@ int BL(double i, double j){
 
 void main(void)
 {
-    dvec2 pos = dvec2(position) / double(pow(1.1, zoom)) + move;
-    float DIM = 1024.;
-    double i = (pos.x + 1.) / 2. * DIM;
-    double j = (-pos.y + 1.) / 2. * DIM;
+    dvec2 pos = position + dvec2(posOffset);
+    double i = pos.x;
+    double j = pos.y;
 
     int cR = int(DIM-BL(2 * i, 2 * j)+animation * 256.);
     int cG = int(BL(j, i)+128+animation * 256.);
