@@ -5,7 +5,7 @@ out vec4 fragColor;
 
 flat in dvec2 position;
 in vec2 posOffset;
-in float DIM;
+flat in float DIM;
 
 float _sq(float x)
 {

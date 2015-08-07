@@ -5,7 +5,7 @@ out vec4 fragColor;
 
 flat in dvec2 position;
 in vec2 posOffset;
-in float DIM;
+flat in float DIM;
 
 double atan2(double y, double x)
 {

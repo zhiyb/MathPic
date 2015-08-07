@@ -7,7 +7,7 @@ uniform float zoom;
 uniform dvec2 move;
 flat out dvec2 position;
 out vec2 posOffset;
-out float DIM;
+flat out float DIM;
 
 void main(void)
 {
