@@ -13,7 +13,7 @@ const char *GLWidget::fileList[] = {
 	RESPFX "mandelbrot2.fsh",
 	RESPFX "julia.fsh",
 	RESPFX "spiral.fsh",
-	RESPFX "stackheap.fsh",
+	RESPFX "clothes.fsh",
 	RESPFX "lines.fsh",
 	RESPFX "light.fsh",
 	RESPFX "alg.fsh",
@@ -174,23 +174,24 @@ void GLWidget::paintGL()
 	QOpenGLFramebufferObject fbo(data.save.blockSize);
 	fbo.bind();
 	resizeGL(data.save.blockSize.width(), data.save.blockSize.height());
+	QPoint pos;
 render:
 	QRect region;
-	region.setLeft(data.save.position.x() * data.save.blockSize.width());
+	region.setLeft(pos.x() * data.save.blockSize.width());
 	region.setWidth(data.save.blockSize.width());
-	region.setTop(data.save.position.y() * data.save.blockSize.height());
+	region.setTop(pos.y() * data.save.blockSize.height());
 	region.setHeight(data.save.blockSize.height());
 	selectRegion(region, data.save.totalSize());
 	render();
-	bool done = data.save.position.y() == data.save.blockCount.height() - 1 &&
-			data.save.position.x() == data.save.blockCount.width() - 1;
+	bool done = pos.y() == data.save.blockCount.height() - 1 &&
+			pos.x() == data.save.blockCount.width() - 1;
 	saveDialog->addImage(region.topLeft(), fbo.toImage(), done);
 	if (!done) {
-		if (data.save.position.x() != data.save.blockCount.width() - 1)
-			data.save.position.setX(data.save.position.x() + 1);
+		if (pos.x() != data.save.blockCount.width() - 1)
+			pos.setX(pos.x() + 1);
 		else {
-			data.save.position.setX(0);
-			data.save.position.setY(data.save.position.y() + 1);
+			pos.setX(0);
+			pos.setY(pos.y() + 1);
 		}
 		goto render;
 	}
@@ -288,7 +289,6 @@ void GLWidget::startRender()
 {
 	data.save.blockSize = QSize(saveDialog->spBlockSize[0]->value(), saveDialog->spBlockSize[1]->value());
 	data.save.blockCount = QSize(saveDialog->spBlockCount[0]->value(), saveDialog->spBlockCount[1]->value());
-	data.save.position = QPoint(0, 0);
 	data.saving = true;
 	update();
 }

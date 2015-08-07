@@ -2,7 +2,7 @@
     <qresource prefix="/data">
         <file>shaders/light.fsh</file>
         <file>shaders/mandelbrot.fsh</file>
-        <file>shaders/stackheap.fsh</file>
+        <file>shaders/clothes.fsh</file>
         <file>shaders/vertex.vsh</file>
         <file>shaders/lines.fsh</file>
         <file>shaders/alg.fsh</file>

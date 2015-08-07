@@ -40,7 +40,6 @@ private:
 		struct save_t {
 			QSize totalSize();
 			QSize blockSize, blockCount;
-			QPoint position;
 		} save;
 		struct loc_t {
 			GLint vertex, projection;

@@ -81,7 +81,7 @@ void Save::render()
 		delete img;
 	lwProgess->clear();
 	tStart = QTime::currentTime();
-	lwProgess->addItem(tr("Rendering start at %1.").arg(tStart.toString("hh:mm:ss")));
+	lwProgess->addItem(tr("Rendering started at %1.").arg(tStart.toString("hh:mm:ss")));
 	QSize size(finalRes());
 	lwProgess->addItem(tr("Allocating memory (%1x%2)...").arg(size.width()).arg(size.height()));
 	img = new QImage(finalRes(), QImage::Format_RGB888);
