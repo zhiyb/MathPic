@@ -14,6 +14,7 @@ const char *GLWidget::fileList[] = {
 	RESPFX "julia.fsh",
 	RESPFX "spiral.fsh",
 	RESPFX "clothes.fsh",
+	RESPFX "circles.fsh",
 	RESPFX "lines.fsh",
 	RESPFX "light.fsh",
 	RESPFX "alg.fsh",

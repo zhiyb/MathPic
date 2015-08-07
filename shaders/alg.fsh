@@ -12,21 +12,31 @@ float _sq(float x)
     return x * x;
 }
 
+float atan2(float y, float x)
+{
+    if (x >= 0)
+        return atan(y / x);
+    else if (y >= 0)
+        return atan(y / x) + acos(-1.);
+    else
+        return atan(y / x) - acos(-1.);
+}
+
 double atan2(double y, double x)
 {
     if (x >= 0)
         return atan(float(y / x));
     else if (y >= 0)
-        return atan(float(y / x)) + acos(-1);
+        return atan(float(y / x)) + acos(-1.);
     else
-        return atan(float(y / x)) - acos(-1);
+        return atan(float(y / x)) - acos(-1.);
 }
 
 void main(void)
 {
-    dvec2 pos = position + dvec2(posOffset);
-    double i = pos.x;
-    double j = pos.y;
+    vec2 pos = vec2(position) + posOffset;
+    float i = pos.x;
+    float j = pos.y;
 
     int cR = int(_sq(cos(float(atan2(j-512,i-512)/2 +animation*2.*acos(-1) )))*255);
     int cG = int(_sq(cos(float(atan2(j-512,i-512)/2-2*acos(-1)/3 +animation*2.*acos(-1) )))*255);
