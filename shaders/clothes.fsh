@@ -3,9 +3,9 @@
 uniform float animation;
 out vec4 fragColor;
 
-flat in dvec2 position;
+uniform uint DIM;
+uniform dvec2 position;
 in vec2 posOffset;
-flat in int DIM;
 
 double _sq(double x)
 {

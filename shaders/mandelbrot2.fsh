@@ -3,9 +3,8 @@
 uniform float animation;
 out vec4 fragColor;
 
-flat in dvec2 position;
+uniform dvec2 position;
 in vec2 posOffset;
-flat in int DIM;
 
 void main(void)
 {

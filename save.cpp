@@ -69,6 +69,27 @@ Save::~Save()
 		delete img;
 }
 
+void Save::hideEvent(QHideEvent *e)
+{
+	reset();
+	QDialog::hideEvent(e);
+}
+
+void Save::closeEvent(QCloseEvent *e)
+{
+	reset();
+	QDialog::closeEvent(e);
+}
+
+void Save::reset()
+{
+	if (img)
+		delete img;
+	img = 0;
+	lwProgess->clear();
+	lOutput->setPixmap(QPixmap());
+}
+
 void Save::updateRes()
 {
 	QSize res = finalRes();
@@ -77,9 +98,7 @@ void Save::updateRes()
 
 void Save::render()
 {
-	if (img)
-		delete img;
-	lwProgess->clear();
+	reset();
 	tStart = QTime::currentTime();
 	lwProgess->addItem(tr("Rendering started at %1.").arg(tStart.toString("hh:mm:ss")));
 	QSize size(finalRes());

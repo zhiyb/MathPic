@@ -2,9 +2,8 @@
 #extension GL_ARB_gpu_shader_fp64 : enable
 out vec4 fragColor;
 
-flat in dvec2 position;
+uniform dvec2 position;
 in vec2 posOffset;
-flat in int DIM;
 
 double D(double x)
 {

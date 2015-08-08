@@ -14,9 +14,12 @@ public:
 signals:
 	void startRender(void);
 
-public slots:
+protected:
+	void hideEvent(QHideEvent *e);
+	void closeEvent(QCloseEvent *e);
 
 private slots:
+	void reset();
 	void updateRes();
 	void render();
 	void save();

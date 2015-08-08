@@ -3,9 +3,8 @@
 uniform float animation;
 out vec4 fragColor;
 
-flat in dvec2 position;
+uniform dvec2 position;
 in vec2 posOffset;
-flat in int DIM;
 
 float _sq(float x)
 {
@@ -20,16 +19,6 @@ float atan2(float y, float x)
         return atan(y / x) + acos(-1.);
     else
         return atan(y / x) - acos(-1.);
-}
-
-double atan2(double y, double x)
-{
-    if (x >= 0)
-        return atan(float(y / x));
-    else if (y >= 0)
-        return atan(float(y / x)) + acos(-1.);
-    else
-        return atan(float(y / x)) - acos(-1.);
 }
 
 void main(void)

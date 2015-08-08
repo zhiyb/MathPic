@@ -8,6 +8,7 @@
 
 #define RESPFX		":/data/shaders/"
 #define ZOOMSTEP	0.25
+#define DIM		1024
 
 const char *GLWidget::fileList[] = {
 	RESPFX "mandelbrot.fsh",
@@ -129,9 +130,10 @@ void GLWidget::loadShaders(QString file)
 
 	data.loc.vertex = glGetAttribLocation(data.program, "vertex");
 	data.loc.projection = glGetUniformLocation(data.program, "projection");
+	data.loc.dim = glGetUniformLocation(data.program, "DIM");
 	data.loc.zoom = glGetUniformLocation(data.program, "zoom");
-	data.loc.move = glGetUniformLocation(data.program, "move");
 	data.loc.animation = glGetUniformLocation(data.program, "animation");
+	data.loc.position = glGetUniformLocation(data.program, "position");
 	glEnableVertexAttribArray(data.loc.vertex);
 	glUseProgram(data.program);
 }
@@ -149,8 +151,11 @@ void GLWidget::paintGL()
 		data.moveY = 0;
 		updateTitle();
 	}
+	double posX = (data.moveX + 1.) * float(DIM / 2);
+	double posY = (data.moveY - 1.) * float(DIM / 2) * -1.;
+	glUniform1ui(data.loc.dim, DIM);
 	glUniform1f(data.loc.zoom, data.zoom);
-	glUniform2d(data.loc.move, data.moveX, data.moveY);
+	glUniform2d(data.loc.position, posX, posY);
 	glVertexAttribPointer(data.loc.vertex, 2, GL_FLOAT, GL_FALSE, 0, data.vertex.constData());
 
 	if (data.loc.animation != -1) {
@@ -182,24 +187,25 @@ void GLWidget::paintGL()
 	fbo.bind();
 	glViewport(0, 0, data.save.blockSize.width(), data.save.blockSize.height());
 	QPoint pos;
-render:
-	// Select region
 	int w = data.save.blockSize.width() * data.save.blockCount.width();
 	int h = data.save.blockSize.height() * data.save.blockCount.height();
 	float asp = (float)h / (float)w;
+render:
+	// Select region
 	data.projection.setToIdentity();
-	data.projection.ortho(-1. + float(2 * pos.x()) / data.save.blockCount.width(),
-			      -1. + float(2 * (pos.x() + 1)) / data.save.blockCount.width(),
-			      asp * (-1. + float(2 * pos.y()) / data.save.blockCount.height()),
-			      asp * (-1. + float(2 * (pos.y() + 1)) / data.save.blockCount.height()), -1., 1.);
-
+	float left = float(2 * pos.x() - data.save.blockCount.width()) / data.save.blockCount.width();
+	float top = float(2 * pos.y() - data.save.blockCount.height()) / data.save.blockCount.height();
+	data.projection.ortho(left, left + 2. / data.save.blockCount.width(),
+			      asp * top, asp * (top + 2. / data.save.blockCount.height()), -1., 1.);
 	render();
 
 	QPoint imgPos(pos.x() * data.save.blockSize.width(), pos.y() * data.save.blockSize.height());
-	glReadPixels(0, 0, imgRen.width(), imgRen.height(), GL_RGB, GL_UNSIGNED_BYTE, imgRen.scanLine(0));
-	for (int i = 0; i < imgRen.height(); i++)
-		memcpy(img->scanLine(img->height() - imgPos.y() - i - 1) + imgPos.x() * 3,
-		       imgRen.constScanLine(i), imgRen.bytesPerLine());
+	glReadPixels(0, 0, imgRen.width(), imgRen.height(), GL_RGB, GL_UNSIGNED_BYTE, imgRen.bits());
+	unsigned char *imgPtr = img->scanLine(img->height() - imgPos.y() - 1) + imgPos.x() * 3;
+	for (int i = 0; i < imgRen.height(); i++) {
+		memcpy(imgPtr, imgRen.constScanLine(i), imgRen.bytesPerLine());
+		imgPtr -= img->bytesPerLine();
+	}
 
 	if (pos.x() != data.save.blockCount.width() - 1)
 		pos.setX(pos.x() + 1);
@@ -285,16 +291,16 @@ void GLWidget::keyPressEvent(QKeyEvent *e)
 		data.currentFile = 0;	// Set as different value for forced loading
 		return;
 	case Qt::Key_Up:
-		data.moveY += -moveTh * 2.f / pow(1.1, data.zoom) / (double)width();
+		data.moveY += -moveTh * 2.f * pow(2, data.zoom) / (double)width();
 		break;
 	case Qt::Key_Down:
-		data.moveY += moveTh * 2.f / pow(1.1, data.zoom) / (double)width();
+		data.moveY += moveTh * 2.f * pow(2, data.zoom) / (double)width();
 		break;
 	case Qt::Key_Left:
-		data.moveX += moveTh * 2.f / pow(1.1, data.zoom) / (double)width();
+		data.moveX += moveTh * 2.f * pow(2, data.zoom) / (double)width();
 		break;
 	case Qt::Key_Right:
-		data.moveX += -moveTh * 2.f / pow(1.1, data.zoom) / (double)width();
+		data.moveX += -moveTh * 2.f * pow(2, data.zoom) / (double)width();
 		break;
 	case '+':	// Zoom in
 	case '=':
@@ -321,7 +327,7 @@ void GLWidget::updateTitle()
 {
 	QString file = data.currentFile == -1 ? data.filePath : fileList[data.currentFile];
 	emit titleUpdate(tr("MathPic <(%1, %2) * %3> - %4")
-			 .arg(data.moveX / 1024.).arg(data.moveY / 1024.).arg(pow(2, data.zoom)).arg(file));
+			 .arg(data.moveX / 1024.).arg(data.moveY / 1024.).arg(1. / pow(2, data.zoom)).arg(file));
 }
 
 GLuint GLWidget::loadShader(GLenum type, const QByteArray& context)

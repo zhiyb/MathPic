@@ -41,8 +41,8 @@ private:
 		} save;
 		struct loc_t {
 			GLint vertex, projection;
-			GLint zoom, move;
-			GLint animation;
+			GLint zoom, position;
+			GLint dim, animation;
 		} loc;
 		GLuint program, fsh, vsh;
 		GLfloat zoom;
