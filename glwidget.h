@@ -51,7 +51,7 @@ private:
 		QVector<QVector2D> vertex;
 		QMatrix4x4 projection;
 		QImage img;
-		bool saving;
+		bool saving, pause;
 		int currentFile, nextFile;
 		QString filePath;
 	} data;

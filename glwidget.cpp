@@ -38,6 +38,7 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent)
 	data.vsh = 0;
 	data.fsh = 0;
 	data.program = 0;
+	data.pause = false;
 	saveDialog = 0;
 
 	QSurfaceFormat fmt = format();
@@ -149,6 +150,7 @@ void GLWidget::paintGL()
 		data.zoom = 0;
 		data.moveX = 0;
 		data.moveY = 0;
+		data.pause = false;
 		updateTitle();
 	}
 	double posX = (data.moveX + 1.) * float(DIM / 2);
@@ -158,7 +160,7 @@ void GLWidget::paintGL()
 	glUniform2d(data.loc.position, posX, posY);
 	glVertexAttribPointer(data.loc.vertex, 2, GL_FLOAT, GL_FALSE, 0, data.vertex.constData());
 
-	if (data.loc.animation != -1) {
+	if (data.loc.animation != -1 && !data.pause) {
 		glUniform1f((float)data.loc.animation, QTime::currentTime().msec() / 1000.);
 		update();
 	}
@@ -256,6 +258,10 @@ void GLWidget::keyPressEvent(QKeyEvent *e)
 	case Qt::Key_Escape:
 		qApp->quit();
 		return;
+	case 'p':	// Pause
+	case 'P':
+		data.pause = !data.pause;
+		break;
 	case 's':	// Render & save
 	case 'S':
 		e->accept();
@@ -326,8 +332,9 @@ void GLWidget::startRender()
 void GLWidget::updateTitle()
 {
 	QString file = data.currentFile == -1 ? data.filePath : fileList[data.currentFile];
-	emit titleUpdate(tr("MathPic <(%1, %2) * %3> - %4")
-			 .arg(data.moveX / 1024.).arg(data.moveY / 1024.).arg(1. / pow(2, data.zoom)).arg(file));
+	emit titleUpdate(tr("MathPic <(%1, %2) * %3> %4- %5")
+			 .arg(data.moveX / 1024.).arg(data.moveY / 1024.).arg(1. / pow(2, data.zoom))
+			 .arg(data.pause ? tr("[Paused] ") : tr("")).arg(file));
 }
 
 GLuint GLWidget::loadShader(GLenum type, const QByteArray& context)
