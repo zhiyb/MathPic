@@ -9,9 +9,9 @@ out vec2 posOffset;
 
 void main(void)
 {
-    posOffset = vertex * pow(2, zoom) * (DIM / 2.) * vec2(1, -1);
+    posOffset = vec2(1, -1) * vertex * float(DIM / 2) * pow(2, zoom);
 
     vec4 pos;
-    pos.xyzw = vec4(vertex, 1., 1.);
+    pos.xyzw = vec4(vertex, 0., 1.);
     gl_Position = projection * pos;
 }
