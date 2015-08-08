@@ -6,7 +6,8 @@
 #include <QDialog>
 #include <QVBoxLayout>
 
-#define RESPFX	":/data/shaders/"
+#define RESPFX		":/data/shaders/"
+#define ZOOMSTEP	0.25
 
 const char *GLWidget::fileList[] = {
 	RESPFX "mandelbrot.fsh",
@@ -200,6 +201,14 @@ render:
 	resizeGL(width(), height());
 }
 
+void GLWidget::wheelEvent(QWheelEvent *e)
+{
+	float zoom = -(float)e->angleDelta().y() / 120. * ZOOMSTEP;
+	data.zoom += zoom;
+	updateTitle();
+	update();
+}
+
 void GLWidget::mousePressEvent(QMouseEvent *e)
 {
 	data.prevPos = e->pos();
@@ -208,8 +217,8 @@ void GLWidget::mousePressEvent(QMouseEvent *e)
 void GLWidget::mouseMoveEvent(QMouseEvent *e)
 {
 	QPointF p = e->pos() - data.prevPos;
-	data.moveX += -p.x() * 2.f / pow(1.1, data.zoom) / (double)width();
-	data.moveY += p.y() * 2.f / pow(1.1, data.zoom) / (double)width();
+	data.moveX += -p.x() * 2.f * pow(2, data.zoom) / (double)width();
+	data.moveY += p.y() * 2.f * pow(2, data.zoom) / (double)width();
 	data.prevPos = e->pos();
 	updateTitle();
 	update();
@@ -275,11 +284,11 @@ void GLWidget::keyPressEvent(QKeyEvent *e)
 		break;
 	case '+':	// Zoom in
 	case '=':
-		data.zoom += 1.;
+		data.zoom -= ZOOMSTEP;
 		break;
 	case '-':	// Zoom out
 	case '_':
-		data.zoom -= 1.;
+		data.zoom += ZOOMSTEP;
 		break;
 	};
 	updateTitle();
@@ -298,15 +307,7 @@ void GLWidget::updateTitle()
 {
 	QString file = data.currentFile == -1 ? data.filePath : fileList[data.currentFile];
 	emit titleUpdate(tr("MathPic <(%1, %2) * %3> - %4")
-			 .arg(data.moveX / 1024.).arg(data.moveY / 1024.).arg(pow(1.1, data.zoom)).arg(file));
-}
-
-void GLWidget::wheelEvent(QWheelEvent *e)
-{
-	float zoom = (float)e->angleDelta().y() / 120.;
-	data.zoom += zoom;
-	updateTitle();
-	update();
+			 .arg(data.moveX / 1024.).arg(data.moveY / 1024.).arg(pow(2, data.zoom)).arg(file));
 }
 
 GLuint GLWidget::loadShader(GLenum type, const QByteArray& context)

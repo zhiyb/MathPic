@@ -7,13 +7,13 @@ uniform float zoom;
 uniform dvec2 move;
 flat out dvec2 position;
 out vec2 posOffset;
-flat out float DIM;
+flat out int DIM;
 
 void main(void)
 {
-    DIM = 1024.;
-    position = (vec2(-1., -1.) / pow(1.1, zoom) + move + vec2(1, -1)) / 2. * DIM * vec2(1, -1);
-    posOffset = (vertex - vec2(-1, -1)) / (pow(1.1, zoom)) / 2. * DIM * vec2(1, -1);
+    DIM = 1024;
+    position = (move + vec2(1, -1)) * (DIM / 2.) * vec2(1, -1);
+    posOffset = vertex * pow(2, zoom) * (DIM / 2.) * vec2(1, -1);
 
     vec4 pos;
     pos.xyzw = vec4(vertex, 1., 1.);
