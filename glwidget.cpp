@@ -71,6 +71,7 @@ void GLWidget::initializeGL()
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_STENCIL_TEST);
 	glDisable(GL_SCISSOR_TEST);
+	glClearColor(0.0, 0.0, 0.0, 1.0);
 
 	data.program = glCreateProgram();
 	loadShaders(fileList[data.currentFile]);
@@ -88,20 +89,9 @@ void GLWidget::resizeGL(int w, int h)
 void GLWidget::render()
 {
 	glUniformMatrix4fv(data.loc.projection, 1, GL_FALSE, data.projection.constData());
-	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glFinish();
-}
-
-void GLWidget::selectRegion(QRect rect, QSize size)
-{
-	float w = size.width(), h = size.height(), asp = h / w;
-	data.projection.setToIdentity();
-	data.projection.ortho(-1. + 2. * rect.left() / w,
-			      -1. + 2. * rect.right() / w,
-			      -asp + 2. * asp * rect.top() / h,
-			      -asp + 2. * asp * rect.bottom() / h, -1., 1.);
 }
 
 void GLWidget::save()
@@ -173,32 +163,56 @@ void GLWidget::paintGL()
 		return;
 	data.saving = false;
 
+	QImage *img = saveDialog->img;
+	QImage imgRen(data.save.blockSize, QImage::Format_RGB888);
+	if (img == 0) {
+		saveDialog->failed(tr("img allocation failed"));
+		return;
+	}
+	if (img->isNull()) {
+		saveDialog->failed(tr("img is null"));
+		return;
+	}
+	if (imgRen.isNull()) {
+		saveDialog->failed(tr("imgRen is null"));
+		return;
+	}
+
 	QOpenGLFramebufferObject fbo(data.save.blockSize);
 	fbo.bind();
-	resizeGL(data.save.blockSize.width(), data.save.blockSize.height());
+	glViewport(0, 0, data.save.blockSize.width(), data.save.blockSize.height());
 	QPoint pos;
 render:
-	QRect region;
-	region.setLeft(pos.x() * data.save.blockSize.width());
-	region.setWidth(data.save.blockSize.width());
-	region.setTop(pos.y() * data.save.blockSize.height());
-	region.setHeight(data.save.blockSize.height());
-	selectRegion(region, data.save.totalSize());
+	// Select region
+	int w = data.save.blockSize.width() * data.save.blockCount.width();
+	int h = data.save.blockSize.height() * data.save.blockCount.height();
+	float asp = (float)h / (float)w;
+	data.projection.setToIdentity();
+	data.projection.ortho(-1. + float(2 * pos.x()) / data.save.blockCount.width(),
+			      -1. + float(2 * (pos.x() + 1)) / data.save.blockCount.width(),
+			      asp * (-1. + float(2 * pos.y()) / data.save.blockCount.height()),
+			      asp * (-1. + float(2 * (pos.y() + 1)) / data.save.blockCount.height()), -1., 1.);
+
 	render();
-	bool done = pos.y() == data.save.blockCount.height() - 1 &&
-			pos.x() == data.save.blockCount.width() - 1;
-	saveDialog->addImage(region.topLeft(), fbo.toImage(), done);
-	if (!done) {
-		if (pos.x() != data.save.blockCount.width() - 1)
-			pos.setX(pos.x() + 1);
-		else {
-			pos.setX(0);
-			pos.setY(pos.y() + 1);
-		}
-		goto render;
+
+	QPoint imgPos(pos.x() * data.save.blockSize.width(), pos.y() * data.save.blockSize.height());
+	glReadPixels(0, 0, imgRen.width(), imgRen.height(), GL_RGB, GL_UNSIGNED_BYTE, imgRen.scanLine(0));
+	for (int i = 0; i < imgRen.height(); i++)
+		memcpy(img->scanLine(img->height() - imgPos.y() - i - 1) + imgPos.x() * 3,
+		       imgRen.constScanLine(i), imgRen.bytesPerLine());
+
+	if (pos.x() != data.save.blockCount.width() - 1)
+		pos.setX(pos.x() + 1);
+	else if (pos.y() != data.save.blockCount.height() - 1) {
+		pos.setX(0);
+		pos.setY(pos.y() + 1);
+	} else {
+		fbo.release();
+		resizeGL(width(), height());
+		saveDialog->done();
+		return;
 	}
-	fbo.release();
-	resizeGL(width(), height());
+	goto render;
 }
 
 void GLWidget::wheelEvent(QWheelEvent *e)
@@ -342,10 +356,4 @@ GLuint GLWidget::loadShaderFile(GLenum type, QString path)
 	QByteArray context = f.readAll();
 	f.close();
 	return loadShader(type, context);
-}
-
-
-QSize GLWidget::data_t::save_t::totalSize()
-{
-	return QSize(blockSize.width() * blockCount.width(), blockSize.height() * blockCount.height());
 }

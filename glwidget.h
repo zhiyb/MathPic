@@ -30,7 +30,6 @@ private slots:
 private:
 	void updateTitle();
 	void render();
-	void selectRegion(QRect rect, QSize size);
 	void save();
 	void loadShaders(QString file);
 	GLuint loadShader(GLenum type, const QByteArray& context);
@@ -38,7 +37,6 @@ private:
 
 	struct data_t {
 		struct save_t {
-			QSize totalSize();
 			QSize blockSize, blockCount;
 		} save;
 		struct loc_t {

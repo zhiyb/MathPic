@@ -20,7 +20,8 @@ private slots:
 	void updateRes();
 	void render();
 	void save();
-	void addImage(QPoint pos, QImage img, bool done);
+	void done();
+	void failed(const QString str);
 
 private:
 	QSize finalRes();

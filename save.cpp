@@ -85,19 +85,8 @@ void Save::render()
 	QSize size(finalRes());
 	lwProgess->addItem(tr("Allocating memory (%1x%2)...").arg(size.width()).arg(size.height()));
 	img = new QImage(finalRes(), QImage::Format_RGB888);
-	if (img == 0)
-		goto allocFailed;
-	else if (img->isNull())
-		goto nullImage;
-	lwProgess->addItem(tr("QImage creation succeed, waiting..."));
+	lwProgess->addItem(tr("Waiting for rendering..."));
 	emit startRender();
-	return;
-nullImage:
-	lwProgess->addItem(tr("Created QImage is a null image."));
-	delete img;
-	img = 0;
-allocFailed:
-	lwProgess->addItem(tr("QImage creation failed!"));
 }
 
 void Save::save()
@@ -122,27 +111,29 @@ void Save::save()
 	lwProgess->scrollToBottom();
 }
 
-void Save::addImage(QPoint pos, QImage img, bool done)
+void Save::done()
 {
-	//lwProgess->addItem(tr("Image received at (%1,%2).").arg(pos.x()).arg(pos.y()));
-	img = img.convertToFormat(QImage::Format_RGB888);
-	for (int i = 0; i < img.height(); i++)
-		memcpy(this->img->scanLine(this->img->height() - pos.y() - img.height() + i) + pos.x() * 3,
-		       img.constScanLine(i), img.bytesPerLine());
-	if (done) {
-		QTime tRender = QTime::currentTime();
-		lwProgess->addItem(tr("Rendering finished at %1.").arg(tRender.toString("hh:mm:ss")));
-		lwProgess->addItem(tr("Time elapsed: %1.%2s.").arg(tStart.secsTo(tRender)).arg(tStart.msecsTo(tRender) % 1000));
-		lwProgess->scrollToBottom();
-		QImage outImg = this->img->scaled(OUTSZ, OUTSZ, Qt::KeepAspectRatio);
-		lOutput->setPixmap(QPixmap::fromImage(outImg));
-		lOutput->resize(outImg.size());
+	QTime tRender = QTime::currentTime();
+	lwProgess->addItem(tr("Rendering finished at %1.").arg(tRender.toString("hh:mm:ss")));
+	lwProgess->addItem(tr("Time elapsed: %1.%2s.").arg(tStart.secsTo(tRender)).arg(tStart.msecsTo(tRender) % 1000));
+	lwProgess->scrollToBottom();
+	QImage outImg = this->img->scaled(OUTSZ, OUTSZ, Qt::KeepAspectRatio);
+	lOutput->setPixmap(QPixmap::fromImage(outImg));
+	lOutput->resize(outImg.size());
 #if 0
-		QTime tEnd = QTime::currentTime();
-		lwProgess->addItem(tr("Image scalling finished at %1.").arg(tEnd.toString("hh:mm:ss")));
-		lwProgess->addItem(tr("Time elapsed: %1.%2s.").arg(tRender.secsTo(tEnd)).arg(tRender.msecsTo(tEnd) % 1000));
+	QTime tEnd = QTime::currentTime();
+	lwProgess->addItem(tr("Image scalling finished at %1.").arg(tEnd.toString("hh:mm:ss")));
+	lwProgess->addItem(tr("Time elapsed: %1.%2s.").arg(tRender.secsTo(tEnd)).arg(tRender.msecsTo(tEnd) % 1000));
 #endif
-	}
+}
+
+void Save::failed(const QString str)
+{
+	lwProgess->addItem(tr("Rendering failed: %1.").arg(str));
+	lwProgess->scrollToBottom();
+	if (img)
+		delete img;
+	img = 0;
 }
 
 QSize Save::finalRes()
