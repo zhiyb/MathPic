@@ -333,7 +333,7 @@ void GLWidget::updateTitle()
 {
 	QString file = data.currentFile == -1 ? data.filePath : fileList[data.currentFile];
 	emit titleUpdate(tr("MathPic <(%1, %2) * %3> %4- %5")
-			 .arg(data.moveX / 1024.).arg(data.moveY / 1024.).arg(1. / pow(2, data.zoom))
+			 .arg(data.moveX).arg(data.moveY).arg(1. / pow(2, data.zoom))
 			 .arg(data.pause ? tr("[Paused] ") : tr("")).arg(file));
 }
 
