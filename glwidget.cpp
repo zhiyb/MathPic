@@ -12,6 +12,7 @@
 
 const char *GLWidget::fileList[] = {
 	RESPFX "mandelbrot.fsh",
+	RESPFX "mandelbrot_sp.fsh",
 	RESPFX "mandelbrot2.fsh",
 	RESPFX "julia.fsh",
 	RESPFX "spiral.fsh",
