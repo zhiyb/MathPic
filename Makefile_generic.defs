@@ -12,11 +12,11 @@ SUBDIRS	:= $(SUBDIRS)
 INCDIRS	:= $(INCDIRS)
 
 # Defaults
-ifndef OPTIMIZE
-OPTLEVEL	?= s
-endif
 #CROSS_COMPILE	?=
 DEPDIR	?= .deps
+ifndef OPTIMIZE
+OPTLEVEL ?= s
+endif
 
 # Subdirectories
 define inc_subdir
@@ -36,12 +36,12 @@ ifdef $1
 	DEFS	+= -D$1=$$($1)
 endif
 endef
+$(foreach conf,$(CONFS),$(eval $(call checkconf,$(conf))))
 define checkconf_d
 ifeq ($$($1),y)
 	DEFS	+= -D$1
 endif
 endef
-$(foreach conf,$(CONFS),$(eval $(call checkconf,$(conf))))
 $(foreach conf,$(CONFS_D),$(eval $(call checkconf_d,$(conf))))
 
 # Cross compile target suffix
@@ -72,9 +72,8 @@ FLAGS	?= -g -Wall
 #FLAGS	+= -Werror
 ifdef OPTLEVEL
 FLAGS	+= -O$(OPTLEVEL)
-else
-FLAGS	+= $(OPTIMIZE)
 endif
+FLAGS	+= $(OPTIMIZE)
 
 ARFLAGS	= $(ARFLG) rcs
 ifdef $(OVERRIDE)
