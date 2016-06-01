@@ -11,6 +11,7 @@
 #define DIM		1024
 
 const char *GLWidget::fileList[] = {
+	RESPFX "perlin.fsh",
 	RESPFX "mandelbrot.fsh",
 	RESPFX "mandelbrot_sp.fsh",
 	RESPFX "mandelbrot2.fsh",
@@ -162,7 +163,8 @@ void GLWidget::paintGL()
 	glVertexAttribPointer(data.loc.vertex, 2, GL_FLOAT, GL_FALSE, 0, data.vertex.constData());
 
 	if (data.loc.animation != -1 && !data.pause) {
-		glUniform1f((float)data.loc.animation, QTime::currentTime().msec() / 1000.);
+		glUniform1f((float)data.loc.animation,
+			    (double)QTime::currentTime().msecsSinceStartOfDay() / 1000.);
 		update();
 	}
 
@@ -261,6 +263,7 @@ void GLWidget::keyPressEvent(QKeyEvent *e)
 		return;
 	case 'p':	// Pause
 	case 'P':
+	case ' ':
 		data.pause = !data.pause;
 		break;
 	case 's':	// Render & save

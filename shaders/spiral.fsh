@@ -17,26 +17,16 @@ double atan2(double y, double x)
         return atan(float(y / x)) - acos(-1);
 }
 
-float sin(double x)
-{
-    return sin(float(x));
-}
-
-float pow(double x, double y)
-{
-    return pow(float(x), float(y));
-}
-
 // cube root
 double _cr(double x)
 {
-    return pow(x,1.0/3.0);
+    return pow(float(x), 1.0/3.0);
 }
 
 int BL(double i, double j){
     i-=512.;j-=512.;
     double d=sqrt(i*i+j*j);
-    return int(d+atan2(j,i)*82.+sin(_cr(d*d))*32.+sin(atan2(j,i)*10.)*64. + 256) % 256;
+    return int(d+atan2(j,i)*82.+sin(float(_cr(d*d)))*32.+sin(float(atan2(j,i)*10.))*64. + 256) % 256;
 }
 
 void main(void)

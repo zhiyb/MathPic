@@ -12,11 +12,6 @@ double _sq(double x)
     return x * x;
 }
 
-float sin(double x)
-{
-    return sin(float(x));
-}
-
 void main(void)
 {
     dvec2 pos = position + dvec2(posOffset);
@@ -24,7 +19,7 @@ void main(void)
     double j = pos.y;
 
     double s=3./(j+99.);
-    double y=(j+sin((i*i+_sq(j-700.)*5.)/100./DIM +animation*2.*acos(-1) )*35.)*s;
+    double y=(j+sin(float((i*i+_sq(j-700.)*5.)/100./DIM +animation*2.*acos(-1)))*35.)*s;
     int cR = (int((i+DIM)*s+y)%2+int((DIM*2-i)*s+y)%2)*127;
     int cG = (int(5*((i+DIM)*s+y))%2+int(5*((DIM*2-i)*s+y))%2)*127;
     int cB = (int(29*((i+DIM)*s+y))%2+int(29*((DIM*2-i)*s+y))%2)*127;

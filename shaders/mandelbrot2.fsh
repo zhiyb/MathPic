@@ -26,14 +26,15 @@ void main(void)
     int cG = int(log(k)*47.);
     int cB = int(128.-log(k)*23.);
 #else
-    int ani = int(animation < 0.5 ? animation * 512 : (1 - animation) * 512);
+    float ani = mod(animation, 1.0);
+    ani = int(ani < 0.5 ? ani * 512. : (1. - ani) * 512.);
     int cR = int(k*16 +ani);
     int cG = int(k*8 +ani);
     int cB = int(k +ani);
 #endif
 
-    gl_FragColor.r = float(cR % 256) / 256.;
-    gl_FragColor.g = float(cG % 256) / 256.;
-    gl_FragColor.b = float(cB % 256) / 256.;
-    gl_FragColor.a = 1.;
+    fragColor.r = float(cR % 256) / 256.;
+    fragColor.g = float(cG % 256) / 256.;
+    fragColor.b = float(cB % 256) / 256.;
+    fragColor.a = 1.;
 }

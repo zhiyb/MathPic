@@ -28,8 +28,8 @@ void main(void)
     float r=i/256.-2,s=j/256.-2,q=r*r+s*s;
     int cB = int(RD(i,j)*sqrt(q/40));
 
-    gl_FragColor.r = float(cR % 256) / 256.;
-    gl_FragColor.g = float(cG % 256) / 256.;
-    gl_FragColor.b = float(cB % 256) / 256.;
-    gl_FragColor.a = 1.;
+    fragColor.r = float(cR % 256) / 256.;
+    fragColor.g = float(cG % 256) / 256.;
+    fragColor.b = float(cB % 256) / 256.;
+    fragColor.a = 1.;
 }

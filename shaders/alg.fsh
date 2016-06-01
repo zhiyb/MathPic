@@ -13,9 +13,9 @@ float _sq(float x)
 
 float atan2(float y, float x)
 {
-    if (x >= 0)
+    if (x >= 0.)
         return atan(y / x);
-    else if (y >= 0)
+    else if (y >= 0.)
         return atan(y / x) + acos(-1.);
     else
         return atan(y / x) - acos(-1.);
@@ -27,12 +27,13 @@ void main(void)
     float i = pos.x;
     float j = pos.y;
 
-    int cR = int(_sq(cos(float(atan2(j-512,i-512)/2 +animation*2.*acos(-1) )))*255);
-    int cG = int(_sq(cos(float(atan2(j-512,i-512)/2-2*acos(-1)/3 +animation*2.*acos(-1) )))*255);
-    int cB = int(_sq(cos(float(atan2(j-512,i-512)/2+2*acos(-1)/3 +animation*2.*acos(-1) )))*255);
+    float ani = mod(animation, 1.);
+    float cR = mod(_sq(cos(atan2(j-512.,i-512.)/2. +ani*2.*acos(-1.) )), 1.);
+    float cG = mod(_sq(cos(atan2(j-512.,i-512.)/2.-2.*acos(-1.)/3. +ani*2.*acos(-1.) )), 1.);
+    float cB = mod(_sq(cos(atan2(j-512.,i-512.)/2.+2.*acos(-1.)/3. +ani*2.*acos(-1.) )), 1.);
 
-    fragColor.r = float(cR % 256) / 256.;
-    fragColor.g = float(cG % 256) / 256.;
-    fragColor.b = float(cB % 256) / 256.;
+    fragColor.r = cR;
+    fragColor.g = cG;
+    fragColor.b = cB;
     fragColor.a = 1.;
 }

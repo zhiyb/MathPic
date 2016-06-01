@@ -11,5 +11,6 @@
         <file>shaders/spiral.fsh</file>
         <file>shaders/circles.fsh</file>
         <file>shaders/mandelbrot_sp.fsh</file>
+        <file>shaders/perlin.fsh</file>
     </qresource>
 </RCC>
