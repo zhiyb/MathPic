@@ -58,7 +58,7 @@ void main(void)
 	vec3 colour[2];
 	colour[0] = vec3(0.1, 0.3, 0.9);
 	colour[1] = vec3(1., 1., 1.);
-	float n = pow(pNoise(pos / 500. + vec2(animation / 5., 0.), 50), 0.45);
+	float n = pow(pNoise(pos / 500. + vec2(animation / 5., 0.), 50), 0.6);
 	fragColor.rgb = mix(colour[0], colour[1], n);
 	fragColor.a = 1.;
 }
